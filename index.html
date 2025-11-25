@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Docdex - The Ultimate Local RAG Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              brand: {
+                // Gold/Yellow primary
+                300: '#fde047', 
+                400: '#facc15',
+                500: '#eab308',
+                600: '#ca8a04',
+              },
+              // Deep dark background
+              page: '#030303',
+              // Surface colors
+              surface: {
+                50: '#0A0A0A',
+                100: '#121212',
+                200: '#1E1E1E',
+                300: '#2D2D2D',
+                400: '#404040',
+              }
+            },
+            backgroundImage: {
+              'glow-gradient': 'radial-gradient(circle at 50% 0%, rgba(250, 204, 21, 0.08) 0%, rgba(0, 0, 0, 0) 60%)',
+              'shiny-gold': 'linear-gradient(180deg, #FDE047 0%, #EAB308 100%)',
+              'shiny-dark': 'linear-gradient(180deg, #262626 0%, #171717 100%)',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #030303;
+        color: #e5e5e5;
+        font-feature-settings: "cv11", "ss01";
+        -webkit-font-smoothing: antialiased;
+      }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #030303; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #262626; 
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #404040; 
+      }
+      .text-balance {
+        text-wrap: balance;
+      }
+      .bg-grid-pattern {
+        background-size: 60px 60px;
+        background-image: 
+          linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
