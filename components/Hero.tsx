@@ -3,6 +3,7 @@ import { Copy, Check, Terminal, Server, Zap } from 'lucide-react';
 
 const Hero: React.FC = () => {
   const [copied, setCopied] = useState(false);
+  const [version, setVersion] = useState<string>('v0.1.5');
   const installCommand = "npm i -g docdex";
   
   const containerRef = useRef<HTMLDivElement>(null);
@@ -14,6 +15,18 @@ const Hero: React.FC = () => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  useEffect(() => {
+    // Fetch latest version from NPM
+    fetch('https://registry.npmjs.org/docdex/latest')
+      .then(res => res.json())
+      .then(data => {
+        if (data.version) {
+          setVersion(`v${data.version}`);
+        }
+      })
+      .catch(err => console.error('Failed to fetch version:', err));
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -277,7 +290,7 @@ const Hero: React.FC = () => {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-100/80 border border-surface-200/60 mb-8 backdrop-blur-md shadow-lg mx-auto lg:mx-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                <span className="text-xs font-medium text-gray-300 tracking-wide">v0.1.5 Now Available</span>
+                <span className="text-xs font-medium text-gray-300 tracking-wide">{version} Now Available</span>
               </div>
               
               <h1 className="text-5xl sm:text-6xl font-semibold tracking-tighter text-white mb-8 text-balance leading-[0.95]">
