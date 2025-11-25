@@ -333,9 +333,9 @@ const Hero: React.FC = () => {
                   <div className="w-12 h-12 rounded-xl bg-brand-500 flex items-center justify-center text-black shadow-[0_0_15px_rgba(234,179,8,0.4)] shrink-0">
                     <Terminal className="w-6 h-6" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white tracking-tight">MCP Server</h3>
+                  <h3 className="text-xl font-semibold text-white tracking-tight">MCP + HTTP</h3>
                 </div>
-                <p className="text-sm text-gray-400 leading-relaxed pl-16 relative z-10">Native integration with Model Context Protocol. Connect Claude directly to your docs.</p>
+                <p className="text-sm text-gray-400 leading-relaxed pl-16 relative z-10">Built-in MCP server and HTTP API share the same index; `/ai-help` ships a JSON playbook for agents.</p>
              </div>
              
              {/* Card 2 */}
@@ -345,9 +345,9 @@ const Hero: React.FC = () => {
                   <div className="w-12 h-12 rounded-xl bg-brand-500 flex items-center justify-center text-black shadow-[0_0_15px_rgba(234,179,8,0.4)] shrink-0">
                     <Server className="w-6 h-6" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white tracking-tight">Unix Daemon</h3>
+                  <h3 className="text-xl font-semibold text-white tracking-tight">Secure Serve</h3>
                 </div>
-                <p className="text-sm text-gray-400 leading-relaxed pl-16 relative z-10">Runs as a background service. Auto-indexes changes in real-time without intervention.</p>
+                <p className="text-sm text-gray-400 leading-relaxed pl-16 relative z-10">Default secure mode enforces auth tokens, loopback allowlists, rate limits, and request-size caps.</p>
              </div>
 
              {/* Card 3 */}
@@ -357,9 +357,9 @@ const Hero: React.FC = () => {
                   <div className="w-12 h-12 rounded-xl bg-brand-500 flex items-center justify-center text-black shadow-[0_0_15px_rgba(234,179,8,0.4)] shrink-0">
                     <Zap className="w-6 h-6" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white tracking-tight">Tantivy Engine</h3>
+                  <h3 className="text-xl font-semibold text-white tracking-tight">Local Index</h3>
                 </div>
-                <p className="text-sm text-gray-400 leading-relaxed pl-16 relative z-10">Built on Rust. 10x faster indexing than Lucene with a minimal memory footprint.</p>
+                <p className="text-sm text-gray-400 leading-relaxed pl-16 relative z-10">Tantivy-backed index lives in your repo under `.docdex/index`; no external services required.</p>
              </div>
           </div>
 

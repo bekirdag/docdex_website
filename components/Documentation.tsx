@@ -84,7 +84,7 @@ const Documentation: React.FC = () => {
 
   const tabs = [
     { id: 'quickstart', label: 'Quick Start', icon: Zap },
-    { id: 'indexing', label: 'Indexing & Watch', icon: Database },
+    { id: 'indexing', label: 'Indexing', icon: Database },
     { id: 'querying', label: 'CLI Query', icon: Terminal },
     { id: 'server', label: 'HTTP Server', icon: Server },
     { id: 'mcp', label: 'MCP Server', icon: Settings },
@@ -98,7 +98,7 @@ const Documentation: React.FC = () => {
                 Up and Running
             </h3>
             <p className="text-gray-400 mb-8 leading-relaxed text-lg">
-                Get Docdex installed and running in under 30 seconds. Requires Node.js 18+.
+                Get Docdex installed and running in under 30 seconds. Requires Node.js 18+; the npm wrapper downloads the right release binary for your platform.
             </p>
 
             <div className="space-y-8">
@@ -110,10 +110,10 @@ const Documentation: React.FC = () => {
                         title="Terminal"
                         language="bash" 
                         code={`# Install globally
-npm install -g docdex
+npm i -g docdex
 
-# Index current directory
-docdex index .`} 
+# Build the index for your repo
+docdexd index --repo /path/to/repo`} 
                     />
                 </div>
                 <div>
@@ -124,7 +124,7 @@ docdex index .`}
                         title="Terminal"
                         language="bash" 
                         code={`# Run a test query
-docdex query "authentication"`} 
+docdexd query --repo /path/to/repo --query "otp flow" --limit 5`} 
                     />
                 </div>
             </div>
@@ -137,44 +137,45 @@ docdex query "authentication"`}
                 Indexing Options
             </h3>
             <p className="text-gray-400 mb-8 leading-relaxed">
-                Control how Docdex scans your files. Use watch mode for development or filtering flags to keep your index clean.
+                Control how Docdex scans your files. `docdexd index` does a full rebuild; `docdexd serve` keeps a watcher running and ingests changes while serving.
             </p>
 
             <div className="space-y-10">
                 <div>
                     <h4 className="text-white font-medium flex items-center gap-2 mb-2">
-                        <Filter className="w-4 h-4 text-brand-400" /> Watch Mode
+                        <Filter className="w-4 h-4 text-brand-400" /> Full index
                     </h4>
-                    <p className="text-sm text-gray-500 mb-4">Automatically updates the index when files change.</p>
+                    <p className="text-sm text-gray-500 mb-4">Create or refresh the on-disk index for your repo.</p>
                     <CodeBlock 
                         title="Terminal"
                         language="bash"
-                        code={`docdex index . --watch`}
+                        code={`docdexd index --repo /path/to/repo`}
                     />
                 </div>
 
                 <div>
                     <h4 className="text-white font-medium flex items-center gap-2 mb-2">
-                        <Filter className="w-4 h-4 text-brand-400" /> Filtering Extensions
+                        <Filter className="w-4 h-4 text-brand-400" /> Exclude directories
                     </h4>
-                    <p className="text-sm text-gray-500 mb-4">Only index specific file types (comma-separated).</p>
+                    <p className="text-sm text-gray-500 mb-4">Skip build/vendor/cache folders in one command.</p>
                     <CodeBlock 
                         title="Terminal"
                         language="bash"
-                        code={`# Only index TypeScript and Markdown
-docdex index . --ext "ts,tsx,md"`}
+                        code={`docdexd index --repo . --exclude-dir node_modules,target,.git`}
                     />
                 </div>
 
                 <div>
                     <h4 className="text-white font-medium flex items-center gap-2 mb-2">
-                        <Filter className="w-4 h-4 text-brand-400" /> Ignoring Paths
+                        <Filter className="w-4 h-4 text-brand-400" /> Prefix filters
                     </h4>
-                    <p className="text-sm text-gray-500 mb-4">Exclude directories using glob patterns.</p>
+                    <p className="text-sm text-gray-500 mb-4">Skip additional relative prefixes or move the state dir.</p>
                     <CodeBlock 
                         title="Terminal"
                         language="bash"
-                        code={`docdex index . --ignore "**/node_modules,**/dist,**/*.test.ts"`}
+                        code={`docdexd index --repo . \\
+  --exclude-prefix ".docdex/tmp,.docdex/logs" \\
+  --state-dir /tmp/docdex-index`}
                     />
                 </div>
             </div>
@@ -198,19 +199,30 @@ docdex index . --ext "ts,tsx,md"`}
                     <CodeBlock 
                         title="Terminal"
                         language="bash"
-                        code={`docdex query "middleware authentication"`}
+                        code={`docdexd query --repo /path/to/repo --query "auth flow" --limit 4`}
                     />
                 </div>
 
                 <div>
                      <h4 className="text-white font-medium flex items-center gap-2 mb-2">
-                        <FileJson className="w-4 h-4 text-brand-400" /> JSON Output
+                        <FileJson className="w-4 h-4 text-brand-400" /> Search response shape
                     </h4>
-                    <p className="text-sm text-gray-500 mb-4">Return machine-readable results.</p>
+                    <p className="text-sm text-gray-500 mb-4">CLI and HTTP return the same structure with summaries and optional snippets.</p>
                     <CodeBlock 
-                        title="Terminal"
-                        language="bash"
-                        code={`docdex query "database schema" --json`}
+                        title="JSON"
+                        language="json"
+                        code={`{
+  "hits": [
+    {
+      "doc_id": "1",
+      "rel_path": "docs/auth.md",
+      "score": 13.2,
+      "summary": "Auth flow overview...",
+      "snippet": "<p>...</p>",
+      "token_estimate": 220
+    }
+  ]
+}`}
                     />
                 </div>
             </div>
@@ -223,7 +235,7 @@ docdex index . --ext "ts,tsx,md"`}
                 HTTP Server
             </h3>
             <p className="text-gray-400 mb-8 leading-relaxed">
-                Expose your index via a lightweight REST API. Perfect for integrating with non-MCP tools or internal dashboards.
+                Expose your index via a lightweight HTTP API. Secure mode is on by default (auth token + loopback allowlist + rate limit). Add <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">--secure-mode=false</code> for local, token-free use.
             </p>
 
             <div className="space-y-10">
@@ -234,8 +246,13 @@ docdex index . --ext "ts,tsx,md"`}
                     <CodeBlock 
                         title="Terminal"
                         language="bash"
-                        code={`# Start on port 8080 (default)
-docdex serve --port 8080`}
+                        code={`# Serve with secure mode defaults
+docdexd serve --repo /path/to/repo \\
+  --host 127.0.0.1 --port 46137 --log info \\
+  --auth-token <token>
+
+# For local, token-free use
+# docdexd serve --repo /path/to/repo --secure-mode=false`}
                     />
                 </div>
 
@@ -243,11 +260,11 @@ docdex serve --port 8080`}
                      <h4 className="text-white font-medium flex items-center gap-2 mb-2">
                         <Command className="w-4 h-4 text-brand-400" /> API Usage
                     </h4>
-                    <p className="text-sm text-gray-500 mb-4">Query the API using curl.</p>
+                    <p className="text-sm text-gray-500 mb-4">Query the API using curl (summary-only for smaller payloads).</p>
                     <CodeBlock 
                         title="Terminal"
                         language="bash"
-                        code={`curl "http://localhost:8080/search?q=auth"`}
+                        code={`curl "http://127.0.0.1:46137/search?q=auth&snippets=false"`}
                     />
                 </div>
             </div>
@@ -271,16 +288,16 @@ docdex serve --port 8080`}
                         <PlayCircle className="w-4 h-4" /> Recommended: Auto-Setup
                     </h4>
                     <p className="text-sm text-gray-400 mb-4">
-                        Use the built-in helper to automatically configure your agent clients.
+                        Use the built-in helper or Codex CLI command from the README to wire up MCP clients.
                     </p>
                     <CodeBlock 
                         title="Terminal"
                         language="bash"
-                        code={`# Add to a specific agent (e.g., Codex)
-docdex mcp-add --agent codex
+                        code={`# Auto-detect supported agents (add --all to try every known one)
+docdex mcp-add --repo /path/to/repo --log warn --max-results 8
 
-# Add to ALL installed agents (Claude, Cursor, etc.)
-docdex mcp-add --all`}
+# Register with Codex CLI for the current repo
+codex mcp add docdex -- docdexd mcp --repo . --log warn --max-results 8`}
                     />
                 </div>
 
@@ -290,7 +307,7 @@ docdex mcp-add --all`}
                         Manual Configuration
                     </h4>
                     <p className="text-sm text-gray-500 mb-4">
-                        If you prefer to edit configuration files manually, add this entry to your <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">claude_desktop_config.json</code>.
+                        If you prefer to edit configuration files manually, add this entry to your <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">claude_desktop_config.json</code> (or equivalent MCP config).
                     </p>
                     <CodeBlock 
                         title="claude_desktop_config.json"
@@ -298,11 +315,15 @@ docdex mcp-add --all`}
                         code={`{
   "mcpServers": {
     "docdex": {
-      "command": "docdex",
+      "command": "docdexd",
       "args": [
         "mcp",
-        "--dir",
-        "/absolute/path/to/docs"
+        "--repo",
+        "/absolute/path/to/repo",
+        "--log",
+        "warn",
+        "--max-results",
+        "8"
       ]
     }
   }

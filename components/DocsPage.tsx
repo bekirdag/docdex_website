@@ -290,9 +290,12 @@ const DocsPage: React.FC = () => {
       label: 'CLI Reference',
       icon: Terminal,
       items: [
-        { id: 'cli-index', label: 'Index & Watch' },
+        { id: 'cli-cheatsheet', label: 'Cheat Sheet' },
+        { id: 'cli-index', label: 'Indexing' },
         { id: 'cli-query', label: 'Query' },
-        { id: 'cli-serve', label: 'Serve' }
+        { id: 'cli-serve', label: 'Serve' },
+        { id: 'config-knobs', label: 'Config Knobs' },
+        { id: 'help-discovery', label: 'Help & Discovery' }
       ]
     },
     {
@@ -392,27 +395,27 @@ const DocsPage: React.FC = () => {
             {/* Introduction */}
             <Section id="what-is-docdex" title="What is Docdex?">
               <p className="text-gray-400 text-lg leading-relaxed mb-6">
-                Docdex (Documentation Indexer) is a high-performance, local RAG (Retrieval-Augmented Generation) engine designed specifically for AI agents and developer workflows.
+                Docdex is a lightweight, local documentation indexer/search daemon. It runs per-project, keeps an on-disk index of your Markdown/text docs, and serves top-k snippets over HTTP or CLI for agents and developers.
               </p>
               <p className="text-gray-400 text-lg leading-relaxed mb-8">
-                As LLM context windows grow, filling them with irrelevant files becomes costly and slow. Docdex solves this by indexing your local codebase or documentation using <span className="text-white font-medium">Tantivy</span>—a blazing fast Rust search engine—allowing agents to retrieve only the exact snippets they need in milliseconds.
+                The same Tantivy-backed index powers HTTP and CLI endpoints; `serve` keeps a watcher running for incremental updates. Secure mode is enabled by default (auth token + loopback allowlist + rate limit), and nothing leaves your machine.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
                   <div className="bg-surface-50/20 p-6 rounded-xl border border-surface-200/50">
                      <h4 className="text-white font-medium mb-2 flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-brand-400" /> Blazing Fast
+                        <Zap className="w-4 h-4 text-brand-400" /> Local & on-disk
                      </h4>
                      <p className="text-sm text-gray-400">
-                        Full-text search across large codebases in under 10ms. 12x faster indexing than Elasticsearch.
+                        Index lives at <code className="bg-surface-200 text-gray-200 px-1 py-0.5 rounded text-xs">&lt;repo&gt;/.docdex/index</code> with 0700 perms. Add <code className="bg-surface-200 text-gray-200 px-1 py-0.5 rounded text-xs">.docdex/</code> to <code className="bg-surface-200 text-gray-200 px-1 py-0.5 rounded text-xs">.gitignore</code> so it never hits version control.
                      </p>
                   </div>
                   <div className="bg-surface-50/20 p-6 rounded-xl border border-surface-200/50">
                      <h4 className="text-white font-medium mb-2 flex items-center gap-2">
-                        <Cpu className="w-4 h-4 text-brand-400" /> Native MCP
+                        <Cpu className="w-4 h-4 text-brand-400" /> Secure + agent ready
                      </h4>
                      <p className="text-sm text-gray-400">
-                        Connects directly to Claude, Cursor, and other AI agents via Model Context Protocol.
+                        Secure mode requires an auth token, loopback allowlist, and request limits by default. `/ai-help` and the built-in MCP server give agents a ready-made playbook.
                      </p>
                   </div>
               </div>
@@ -421,8 +424,8 @@ const DocsPage: React.FC = () => {
                 title="Quick Preview"
                 language="bash"
                 code={`# It's as simple as this
-npm install -g docdex
-docdex index .`}
+npm i -g docdex
+docdexd index --repo /path/to/repo`}
               />
             </Section>
 
@@ -430,8 +433,19 @@ docdex index .`}
               <HeroCommand command="npm install -g docdex" />
 
               <p className="text-gray-400 mb-6 leading-relaxed">
-                Docdex is built on Node.js and requires version <span className="text-white font-mono">18.0.0</span> or higher. It relies on native binaries for the Tantivy engine, which are downloaded automatically during installation.
+                Docdex is built on Node.js and requires version <span className="text-white font-mono">18</span> or higher. The npm package downloads a platform-specific binary from the matching GitHub release (macOS arm64/x64, Linux glibc/musl arm64/x64, Windows x64/arm64).
               </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div className="p-4 rounded-lg bg-surface-50 border border-surface-200/50 text-sm text-gray-400">
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Download matrix</span>
+                  Installer fetches the matching release asset for your platform (macOS arm64/x64, Linux glibc/musl arm64/x64, Windows x64/arm64).
+                </div>
+                <div className="p-4 rounded-lg bg-surface-50 border border-surface-200/50 text-sm text-gray-400">
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Custom forks</span>
+                  Set <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">DOCDEX_DOWNLOAD_REPO=&lt;owner/repo&gt;</code> before installing to fetch release assets from a fork.
+                </div>
+              </div>
               
               <div className="flex items-start gap-3 p-4 bg-brand-900/10 border border-brand-500/20 rounded-lg text-brand-100 text-sm mb-8">
                  <AlertCircle className="w-5 h-5 text-brand-400 shrink-0 mt-0.5" />
@@ -446,19 +460,23 @@ docdex index .`}
                    Once installed, verify that the CLI is accessible in your path.
                  </p>
                  <CodeBlock 
-                    title="Terminal"
-                    language="bash"
-                    code={`docdex --version
-# Output: 0.1.5`}
+                     title="Terminal"
+                     language="bash"
+                     code={`npx docdex --version
+# prints the installed version`}
                  />
+               </SubSection>
+
+               <SubSection title="Versioning">
+                 <p className="text-gray-400 text-sm">Docdex uses semantic versioning; the Rust crate and npm package share the same version. Tagged releases come from Release Please automation.</p>
                </SubSection>
             </Section>
 
             <Section id="basic-usage" title="Basic Usage">
-               <HeroCommand command="docdex index ." />
+               <HeroCommand command="docdexd index --repo ." />
 
                <p className="text-gray-400 mb-6 leading-relaxed">
-                  Docdex works by creating a local index of your text files. This index is stored in your home directory (typically `~/.docdex`), so it doesn't clutter your project folders.
+                  Docdex builds a local Tantivy index of your docs at <code className="bg-surface-200 text-gray-200 px-1 py-0.5 rounded text-xs">&lt;repo&gt;/.docdex/index</code> (0700 perms). No external services or uploads.
                </p>
 
                <SubSection title="1. Navigate to your project">
@@ -469,13 +487,13 @@ docdex index .`}
 
                <SubSection title="2. Initialize the Index">
                   <p className="text-gray-400 mb-4">
-                     Run the index command. Docdex will recursively scan the directory, filtering for supported text formats (Markdown, TypeScript, Python, etc.) and ignoring binary files.
+                     Run the index command. Docdex scans Markdown/text files and skips common VCS/build/cache/vendor directories automatically.
                   </p>
                   <CodeBlock 
                      title="Terminal"
                      language="bash"
                      code={`cd ~/my-projects/backend-api
-docdex index .`}
+docdexd index --repo .`}
                   />
                   <div className="bg-surface-50/50 border border-surface-200/50 p-4 rounded-lg mb-6">
                       <p className="text-sm text-gray-300 font-mono">
@@ -486,133 +504,203 @@ docdex index .`}
                   </div>
                </SubSection>
 
-               <SubSection title="3. Search">
+               <SubSection title="3. Serve or search">
                   <p className="text-gray-400 mb-4">
-                     Now you can perform fuzzy semantic searches across your codebase instantly.
+                     Use the CLI directly or serve the same index over HTTP. Secure mode requires an auth token by default; disable with <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">--secure-mode=false</code> for local-only use.
                   </p>
                    <CodeBlock 
                      title="Terminal"
                      language="bash"
-                     code={`docdex query "rate limiter logic"`}
+                     code={`# Ad-hoc search via CLI
+docdexd query --repo . --query "rate limiter" --limit 4
+
+# Serve HTTP API with watcher
+docdexd serve --repo . --host 127.0.0.1 --port 46137 --log info --auth-token <token>`}
                   />
+               </SubSection>
+
+               <SubSection title="Paths & defaults">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-400">
+                    <div className="p-4 rounded-lg border border-surface-200/50 bg-surface-50/20">
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">State dir</span>
+                      <p><code className="bg-surface-200 text-gray-200 px-1 py-0.5 rounded text-xs">&lt;repo&gt;/.docdex/index</code> (0700). Reuses legacy <code className="bg-surface-200 text-gray-200 px-1 py-0.5 rounded text-xs">.gpt-creator/docdex/index</code> if present.</p>
+                    </div>
+                    <div className="p-4 rounded-lg border border-surface-200/50 bg-surface-50/20">
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Defaults</span>
+                      <p>HTTP bind <code className="bg-surface-200 text-gray-200 px-1 py-0.5 rounded text-xs">127.0.0.1:46137</code>, <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">max_limit=8</code>, <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">max_query_bytes=4096</code>, <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">max_request_bytes=16384</code>, rate limit <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">60 req/min</code> in secure mode.</p>
+                    </div>
+                  </div>
                </SubSection>
             </Section>
 
+            <Section id="cli-cheatsheet" title="CLI Cheat Sheet">
+               <p className="text-gray-400 mb-6 leading-relaxed">
+                  Most-used commands straight from the README. CLI and HTTP share the same on-disk index.
+               </p>
+               <CodeBlock 
+                 title="Terminal"
+                 language="bash"
+                 code={`# Build index for a repo
+docdexd index --repo <path>
+
+# Serve HTTP API (secure mode on; requires auth token by default)
+docdexd serve --repo <path> --host 127.0.0.1 --port 46137 --log warn --auth-token <token>
+
+# Query via CLI (JSON)
+docdexd query --repo <path> --query "term" --limit 4
+
+# Single-file ingest (honors excludes)
+docdexd ingest --repo <path> --file docs/new.md
+
+# Health check
+curl http://127.0.0.1:46137/healthz
+
+# Summary-only HTTP search
+curl "http://127.0.0.1:46137/search?q=foo&snippets=false"`}
+               />
+            </Section>
+
             <Section id="cli-index" title="Indexing">
-                <HeroCommand command="docdex index . --watch" />
+                <HeroCommand command="docdexd index --repo /path/to/repo" />
 
                 <p className="text-gray-400 mb-8">
-                    The `index` command is the core of Docdex. It scans your specified directory, parses valid files, and builds a compressed inverted index.
+                    The `index` command is the core of Docdex. It scans your specified directory, parses supported docs, and builds a Tantivy-backed index on disk. `serve` reuses it and keeps it fresh with a watcher.
                 </p>
 
                 <SubSection title="Command Arguments">
                     <ArgsTable 
                         args={[
-                            { name: '--dir', description: 'The directory to index. Defaults to current directory (.)', type: 'string', required: false },
-                            { name: '--watch', description: 'Run in daemon mode. Watches for file changes and updates index incrementally.', type: 'boolean', required: false },
-                            { name: '--ext', description: 'Comma-separated list of file extensions to include (e.g., "ts,md").', type: 'string', required: false },
-                            { name: '--ignore', description: 'Glob patterns to ignore (e.g., "**/node_modules").', type: 'string', required: false },
-                            { name: '--clean', description: 'Delete existing index and rebuild from scratch.', type: 'boolean', required: false },
+                            { name: '--repo', description: 'Workspace root to index (defaults to current directory).', type: 'string', required: false },
+                            { name: '--state-dir', description: 'Override index storage (default: <repo>/.docdex/index).', type: 'string', required: false },
+                            { name: '--exclude-dir', description: 'Comma-separated directory names to skip anywhere in the tree.', type: 'string', required: false },
+                            { name: '--exclude-prefix', description: 'Comma-separated relative prefixes to skip.', type: 'string', required: false },
+                            { name: '--max-limit', description: 'Clamp search results (default 8).', type: 'number', required: false },
+                            { name: '--max-query-bytes', description: 'Reject queries beyond this size (default 4096).', type: 'number', required: false },
+                            { name: '--max-request-bytes', description: 'Reject bodies beyond this size (default 16384).', type: 'number', required: false },
                         ]} 
                     />
                 </SubSection>
 
                 <SubSection title="Exclusion Rules">
                     <p className="text-gray-400 mb-4">
-                        Docdex tries to be smart about what it indexes to avoid polluting your search results with build artifacts or dependency locks.
+                        Docdex indexes Markdown/text only (`.md`, `.markdown`, `.mdx`, `.txt`). It skips broad VCS/build/cache/vendor folders by default (e.g., `.git`, `node_modules`, `.next`, `target`, `.venv`, `.yarn*`, `dist`) and prefixes like `.docdex/`, `.docdex/tmp/`, and `.gpt-creator/logs/`.
                     </p>
-                    <ul className="list-disc list-inside text-gray-400 space-y-2 mb-6 ml-2">
-                        <li>It automatically respects your <code className="bg-surface-200 text-gray-200 px-1 py-0.5 rounded text-xs">.gitignore</code> file.</li>
-                        <li>It looks for a <code className="bg-surface-200 text-gray-200 px-1 py-0.5 rounded text-xs">.docdexignore</code> file in the root for specific overrides.</li>
-                        <li>By default, it always ignores <code className="text-brand-400">node_modules</code>, <code className="text-brand-400">.git</code>, and <code className="text-brand-400">dist</code>.</li>
-                    </ul>
+                    <p className="text-gray-400 text-sm mb-4">Add <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">.docdex/</code> to <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">.gitignore</code> so index artifacts never land in version control.</p>
                      <CodeBlock 
                         title="Advanced Indexing Example"
                         language="bash"
-                        code={`# Exclude tests and build artifacts
-docdex index . \\
-  --ignore "**/*.test.ts,**/dist" \\
-  --ext "ts,tsx,md"`}
+                        code={`# Skip extra prefixes and store the index elsewhere
+docdexd index --repo . \\
+  --exclude-dir node_modules,.next,target \\
+  --exclude-prefix ".docdex/tmp,.docdex/logs" \\
+  --state-dir /tmp/docdex-index`}
                      />
+                </SubSection>
+
+                <SubSection title="Single-file ingest">
+                  <p className="text-gray-400 mb-4">
+                    Reindex a specific file without rebuilding everything (honors excludes).
+                  </p>
+                  <CodeBlock 
+                    title="Terminal"
+                    language="bash"
+                    code={`docdexd ingest --repo /path/to/repo --file docs/new.md`}
+                  />
+                </SubSection>
+
+                <SubSection title="Self-check for sensitive terms">
+                  <p className="text-gray-400 mb-4">
+                    Scan the index for sensitive keywords before exposing it over HTTP. Non-zero exit if matches are found; includes built-in token/password patterns unless you disable them.
+                  </p>
+                  <CodeBlock 
+                    title="Terminal"
+                    language="bash"
+                    code={`# Built-in patterns are enabled by default
+docdexd self-check --repo /path/to/repo --terms "password,token" --limit 5
+
+# Only use your provided terms
+# docdexd self-check --repo /path/to/repo --terms "secret" --include-default-patterns=false`}
+                  />
                 </SubSection>
 
                 <SubSection title="Watch Mode">
                     <p className="text-gray-400 mb-4">
-                        When running with <code className="text-brand-400">--watch</code>, the process will not exit. It attaches a filesystem watcher to the directory. When you save a file, Docdex re-indexes only that specific file in milliseconds, ensuring your AI agents always have the latest context.
+                        Live updates come from <code className="text-brand-400">docdexd serve</code>, which keeps a watcher running while the HTTP API is up. Rerun <code className="text-brand-400">docdexd index</code> when you need a full rebuild.
                     </p>
                 </SubSection>
             </Section>
 
             <Section id="cli-query" title="CLI Query">
-                <HeroCommand command="docdex query 'search term'" />
+                <HeroCommand command="docdexd query --repo /path/to/repo --query 'search term'" />
 
                 <p className="text-gray-400 mb-8">
-                    The `query` command allows you to test the index quality directly. It returns the most relevant code snippets based on BM25 scoring.
+                    The `query` command lets you read search results directly from the shared index. Responses match the HTTP `/search` shape (summary + optional snippets + token estimates).
                 </p>
 
                 <SubSection title="Command Arguments">
                     <ArgsTable 
                         args={[
-                            { name: 'query', description: 'The search terms (e.g. "authentication").', type: 'string', required: true },
-                            { name: '--limit', description: 'Maximum number of results to return. Default: 10', type: 'number', required: false },
-                            { name: '--json', description: 'Output results as raw JSON for piping to other tools.', type: 'boolean', required: false },
-                            { name: '--threshold', description: 'Minimum score threshold for relevance. Default: 0.1', type: 'number', required: false },
+                            { name: '--repo', description: 'Workspace root to read from (defaults to current directory).', type: 'string', required: false },
+                            { name: '--query', description: 'Search text (keep it concise for the 4096-byte limit).', type: 'string', required: true },
+                            { name: '--limit', description: 'Maximum number of results to return. Default: 8', type: 'number', required: false },
                         ]} 
                     />
                 </SubSection>
 
-                <SubSection title="Search Syntax">
-                    <div className="space-y-4 text-gray-400 text-sm mb-6">
-                        <div className="flex gap-4">
-                            <span className="font-mono text-brand-400 w-24 shrink-0">auth</span>
-                            <span>Fuzzy match. Finds "auth", "authentication", "author".</span>
-                        </div>
-                        <div className="flex gap-4">
-                            <span className="font-mono text-brand-400 w-24 shrink-0">"auth"</span>
-                            <span>Exact match. Only finds the exact word "auth".</span>
-                        </div>
-                         <div className="flex gap-4">
-                            <span className="font-mono text-brand-400 w-24 shrink-0">-test</span>
-                            <span>Exclusion. Finds documents that do NOT contain "test".</span>
-                        </div>
+                <SubSection title="Search Guidance">
+                    <div className="space-y-3 text-gray-400 text-sm mb-6">
+                        <div className="flex gap-3"><span className="font-mono text-brand-400 w-32 shrink-0">Short queries</span><span>Keep queries tight to stay under the <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">max_query_bytes=4096</code> default.</span></div>
+                        <div className="flex gap-3"><span className="font-mono text-brand-400 w-32 shrink-0">Summary-first</span><span>Use small limits and summary-only responses when possible, then fetch snippets selectively.</span></div>
+                        <div className="flex gap-3"><span className="font-mono text-brand-400 w-32 shrink-0">Stale index?</span><span>Re-run <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">docdexd index --repo &lt;path&gt;</code> if results look outdated.</span></div>
+                        <div className="flex gap-3"><span className="font-mono text-brand-400 w-32 shrink-0">Token budgets</span><span>Use <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">max_tokens=&lt;u64&gt;</code> on `/search` or `/snippet` to drop hits that exceed your prompt budget.</span></div>
+                        <div className="flex gap-3"><span className="font-mono text-brand-400 w-32 shrink-0">Text-only</span><span>Append <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">text_only=true</code> to `/snippet/:doc_id` or start with <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">--strip-snippet-html</code> to omit HTML.</span></div>
+                        <div className="flex gap-3"><span className="font-mono text-brand-400 w-32 shrink-0">Sizing</span><span>Summaries target ~360 chars (up to 4 segments); snippets target ~420 chars.</span></div>
                     </div>
                 </SubSection>
                 
                 <SubSection title="Output Format">
                     <p className="text-gray-400 mb-4">
-                        Using <code className="text-brand-400">--json</code> returns a structured response useful for integrations.
+                        Responses contain summaries and optional snippets per hit (scores + token estimates included).
                     </p>
                     <CodeBlock 
                         title="JSON Output"
                         language="json"
                         code={`{
-  "results": [
+  "hits": [
     {
-      "score": 14.2,
-      "filePath": "src/auth/guard.ts",
-      "content": "export class AuthGuard...",
-      "line": 42
+      "doc_id": "1",
+      "rel_path": "docs/auth.md",
+      "score": 13.2,
+      "summary": "Auth flow overview...",
+      "snippet": "<p>...</p>",
+      "token_estimate": 220
     }
-  ],
-  "total_hits": 1
+  ]
 }`}
                     />
                 </SubSection>
             </Section>
 
             <Section id="cli-serve" title="HTTP Server">
-                <HeroCommand command="docdex serve --port 8080" />
+                <HeroCommand command="docdexd serve --repo /path/to/repo --host 127.0.0.1 --port 46137 --log info --auth-token <token>" />
 
                 <p className="text-gray-400 mb-8">
-                    Start a standalone REST API server. This is useful if you want to build a custom dashboard or if your agent environment requires HTTP access (e.g. custom GPT Actions).
+                    Start the HTTP API with live file watching. Secure mode is enabled by default: auth token required, loopback allowlist, TLS enforcement on non-loopback, 60 req/min rate limit, default max limit 8, and request caps (4096-byte queries, 16384-byte bodies). Keep the default bind <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">127.0.0.1</code> unless you are behind a trusted proxy. Add <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">--secure-mode=false</code> for local token-free use.
                 </p>
 
                 <SubSection title="Command Arguments">
                      <ArgsTable 
                         args={[
-                            { name: '--port', description: 'Port to listen on. Default: 8080', type: 'number', required: false },
-                            { name: '--host', description: 'Host address to bind to. Default: localhost', type: 'string', required: false },
-                            { name: '--cors', description: 'Enable CORS for all origins.', type: 'boolean', required: false },
+                            { name: '--repo', description: 'Workspace root (defaults to current directory).', type: 'string', required: false },
+                            { name: '--host', description: 'Bind address (default: 127.0.0.1).', type: 'string', required: false },
+                            { name: '--port', description: 'Port to listen on (default: 46137).', type: 'number', required: false },
+                            { name: '--auth-token', description: 'Bearer token (required in secure mode).', type: 'string', required: false },
+                            { name: '--secure-mode', description: 'Enable/disable secure defaults (default: true).', type: 'boolean', required: false },
+                            { name: '--allow-ip', description: 'Comma-separated IPs/CIDRs to allow beyond loopback.', type: 'string', required: false },
+                            { name: '--tls-cert/--tls-key', description: 'Serve HTTPS with provided cert/key (or use --certbot-* helpers).', type: 'string', required: false },
+                            { name: '--max-limit / --max-query-bytes / --max-request-bytes / --rate-limit-per-min', description: 'Tune result count and payload limits.', type: 'string', required: false },
+                            { name: '--require-tls / --insecure', description: 'Control TLS enforcement on non-loopback binds.', type: 'boolean', required: false },
+                            { name: '--certbot-domain / --certbot-live-dir', description: 'Use Certbot certificates by domain or path.', type: 'string', required: false },
                         ]} 
                     />
                 </SubSection>
@@ -620,28 +708,129 @@ docdex index . \\
                 <SubSection title="API Endpoints">
                     <EndpointTable 
                         endpoints={[
-                            { method: 'GET', path: '/search?q=...', desc: 'Main search endpoint. Accepts `q` (query), `limit`, and `threshold` params.' },
-                            { method: 'GET', path: '/health', desc: 'Health check. Returns 200 OK if index is loaded.' },
-                            { method: 'GET', path: '/stats', desc: 'Returns index statistics (document count, size).' },
+                            { method: 'GET', path: '/search?q=<&limit=&snippets=&max_tokens=>', desc: 'Returns hits with doc id, rel path, summary, snippet, score, token estimate.' },
+                            { method: 'GET', path: '/snippet/:doc_id?window=&q=&text_only=&max_tokens=', desc: 'Fetch a focused snippet for a doc id; falls back to preview when no highlights (default window 40 lines).' },
+                            { method: 'GET', path: '/healthz', desc: 'Health check (unauthenticated; still subject to IP allowlist).' },
+                            { method: 'GET', path: '/ai-help', desc: 'JSON playbook for agents (requires auth if configured).' },
+                            { method: 'GET', path: '/metrics', desc: 'Prometheus-style counters for rate-limit/auth/error metrics.' },
+                            { method: 'GET', path: '/snippet/:doc_id?text_only=true', desc: 'Return text-only snippets; pair with --strip-snippet-html to disable HTML globally.' },
                         ]}
                     />
                     <CodeBlock 
                         title="API Response"
                         language="bash"
-                        code={`# Request
-curl "http://localhost:8080/search?q=jwt"
+                        code={`# Request (summary-only for a smaller payload)
+curl "http://127.0.0.1:46137/search?q=jwt&snippets=false"
 
 # Response
 {
-  "matches": [...],
-  "latency": "4ms"
+  "hits": [
+    {
+      "doc_id": "1",
+      "rel_path": "docs/auth.md",
+      "summary": "Auth flow overview...",
+      "snippet": null,
+      "token_estimate": 220
+    }
+  ]
 }`}
+                    />
+                </SubSection>
+
+                <SubSection title="TLS & Certbot">
+                    <p className="text-gray-400 mb-4">Enforce TLS on non-loopback binds (default) or explicitly opt out only behind a trusted proxy.</p>
+                    <CodeBlock 
+                        title="Terminal"
+                        language="bash"
+                        code={`# Serve with Certbot-managed certificates
+docdexd serve --repo /path/to/repo --host 0.0.0.0 --port 46137 \
+  --certbot-domain docs.example.com
+
+# Manual cert/key
+docdexd serve --repo /path/to/repo --tls-cert /path/fullchain.pem --tls-key /path/privkey.pem
+
+# If TLS is already terminated upstream
+# docdexd serve --repo . --require-tls=false --host 127.0.0.1 --port 46137`}
                     />
                 </SubSection>
             </Section>
 
+            <Section id="config-knobs" title="Configuration Knobs">
+                <p className="text-gray-400 mb-6">
+                    Flags and env vars available on `docdexd` (from the README). Combine with `--help` for full lists.
+                </p>
+
+                <SubSection title="Common flags">
+                    <ArgsTable 
+                        args={[
+                            { name: '--repo', description: 'Workspace root to index/serve (default: .).', type: 'string' },
+                            { name: '--state-dir', description: 'Override index storage path (default: <repo>/.docdex/index).', type: 'string' },
+                            { name: '--exclude-prefix', description: 'Comma-separated relative prefixes to skip.', type: 'string' },
+                            { name: '--exclude-dir', description: 'Comma-separated directory names to skip anywhere.', type: 'string' },
+                            { name: '--auth-token', description: 'Bearer token for secure mode (required by default).', type: 'string' },
+                            { name: '--secure-mode', description: 'Enable/disable secure defaults (default: true).', type: 'boolean' },
+                            { name: '--allow-ip', description: 'Allowlist IPs/CIDRs beyond loopback.', type: 'string' },
+                            { name: '--tls-cert/--tls-key', description: 'Serve HTTPS with provided cert/key.', type: 'string' },
+                            { name: '--certbot-domain / --certbot-live-dir', description: 'Use Certbot certificates by domain or path.', type: 'string' },
+                            { name: '--require-tls / --insecure', description: 'Control TLS enforcement for non-loopback binds.', type: 'boolean' },
+                            { name: '--max-limit', description: 'Clamp HTTP limit (default 8).', type: 'number' },
+                            { name: '--max-query-bytes', description: 'Reject queries beyond this size (default 4096).', type: 'number' },
+                            { name: '--max-request-bytes', description: 'Reject bodies beyond this size (default 16384).', type: 'number' },
+                            { name: '--rate-limit-per-min / --rate-limit-burst', description: 'Request budget per minute + burst (default 60/min in secure mode).', type: 'number' },
+                            { name: '--strip-snippet-html / --disable-snippet-text', description: 'Control snippet HTML/text in responses.', type: 'boolean' },
+                            { name: '--access-log', description: 'Enable/disable structured access logs.', type: 'boolean' },
+                            { name: '--audit-log-path / --audit-max-bytes / --audit-max-files / --audit-disable', description: 'Configure audit logging and rotation.', type: 'string' },
+                            { name: '--run-as-uid / --run-as-gid', description: 'Drop privileges after startup prep (Unix).', type: 'number' },
+                            { name: '--chroot', description: 'Chroot before serving (Unix).', type: 'string' },
+                            { name: '--unshare-net', description: 'Unshare network namespace (Linux only).', type: 'boolean' },
+                            { name: '--log', description: 'Log level for serve (default info).', type: 'string' },
+                        ]}
+                    />
+                </SubSection>
+
+                <SubSection title="Environment variables">
+                    <ArgsTable 
+                        args={[
+                            { name: 'DOCDEX_STATE_DIR', description: 'Index storage override.', type: 'string' },
+                            { name: 'DOCDEX_EXCLUDE_PREFIXES', description: 'Extra prefixes to skip.', type: 'string' },
+                            { name: 'DOCDEX_EXCLUDE_DIRS', description: 'Extra directory names to skip.', type: 'string' },
+                            { name: 'DOCDEX_AUTH_TOKEN', description: 'Bearer token for secure mode.', type: 'string' },
+                            { name: 'DOCDEX_SECURE_MODE', description: 'Enable/disable secure defaults.', type: 'boolean' },
+                            { name: 'DOCDEX_ALLOW_IPS', description: 'Allowlist IPs/CIDRs.', type: 'string' },
+                            { name: 'DOCDEX_TLS_CERT / DOCDEX_TLS_KEY', description: 'TLS cert/key paths.', type: 'string' },
+                            { name: 'DOCDEX_CERTBOT_DOMAIN / DOCDEX_CERTBOT_LIVE_DIR', description: 'Certbot configuration.', type: 'string' },
+                            { name: 'DOCDEX_REQUIRE_TLS / DOCDEX_INSECURE_HTTP', description: 'TLS enforcement flags.', type: 'boolean' },
+                            { name: 'DOCDEX_MAX_LIMIT / DOCDEX_MAX_QUERY_BYTES / DOCDEX_MAX_REQUEST_BYTES', description: 'Limit and size caps.', type: 'string' },
+                            { name: 'DOCDEX_RATE_LIMIT_PER_MIN / DOCDEX_RATE_LIMIT_BURST', description: 'Rate limit settings.', type: 'string' },
+                            { name: 'DOCDEX_AUDIT_LOG_PATH / DOCDEX_AUDIT_MAX_BYTES / DOCDEX_AUDIT_MAX_FILES / DOCDEX_AUDIT_DISABLE', description: 'Audit logging options.', type: 'string' },
+                            { name: 'DOCDEX_STRIP_SNIPPET_HTML / DOCDEX_DISABLE_SNIPPET_TEXT', description: 'Snippet content controls.', type: 'boolean' },
+                            { name: 'DOCDEX_ACCESS_LOG', description: 'Enable/disable access log.', type: 'boolean' },
+                            { name: 'DOCDEX_MCP_MAX_RESULTS', description: 'Clamp MCP search results (default 8).', type: 'number' },
+                            { name: 'DOCDEX_RUN_AS_UID / DOCDEX_RUN_AS_GID', description: 'Privilege drop IDs.', type: 'number' },
+                            { name: 'DOCDEX_CHROOT', description: 'Chroot path.', type: 'string' },
+                            { name: 'DOCDEX_UNSHARE_NET', description: 'Unshare network namespace (Linux).', type: 'boolean' },
+                        ]}
+                    />
+                </SubSection>
+            </Section>
+
+            <Section id="help-discovery" title="Help & Discovery">
+                <p className="text-gray-400 mb-6">Use built-in help to explore every flag and subcommand.</p>
+                <CodeBlock 
+                    title="Terminal"
+                    language="bash"
+                    code={`docdexd --help
+docdexd help-all
+docdexd serve --help
+docdexd index --help
+docdexd query --help
+docdexd self-check --help
+docdexd mcp --help`}
+                />
+            </Section>
+
             <Section id="mcp-server" title="MCP Server">
-                <HeroCommand command="docdex mcp-add --all" />
+                <HeroCommand command="docdex mcp-add --repo /path/to/repo --log warn --max-results 8" />
 
                 <p className="text-gray-400 mb-6">
                     Docdex implements the **Model Context Protocol (MCP)** standard. This allows it to function as a plug-and-play knowledge provider for AI agents like Claude Desktop and Cursor.
@@ -650,18 +839,20 @@ curl "http://localhost:8080/search?q=jwt"
                     The simplest way to configure your agents is using the `mcp-add` helper command.
                 </p>
 
-                 <SubSection title="Helper Arguments">
-                     <ArgsTable 
+                <SubSection title="Helper Arguments">
+                    <ArgsTable 
                         args={[
+                            { name: '--repo', description: 'Workspace root to serve over MCP.', type: 'string', required: false },
+                            { name: '--log', description: 'Log level for the MCP server (e.g., warn).', type: 'string', required: false },
+                            { name: '--max-results', description: 'Clamp search results (default: 8).', type: 'number', required: false },
                             { name: '--all', description: 'Attempt to add Docdex to all detected MCP clients on the system.', type: 'boolean', required: false },
-                            { name: '--agent', description: 'Target a specific agent (claude, cursor, etc).', type: 'string', required: false },
                         ]} 
                     />
                 </SubSection>
 
-                 <SubSection title="How it Works">
+                <SubSection title="How it Works">
                     <p className="text-gray-400 mb-4">
-                        When configured, the agent launches Docdex in MCP mode via stdio (`docdex mcp`). The agent communicates with Docdex over standard input/output streams using JSON-RPC.
+                        When configured, the agent launches Docdex in MCP mode via stdio (`docdexd mcp --repo &lt;path&gt;`). The agent communicates with Docdex over standard input/output streams using JSON-RPC.
                     </p>
                     <div className="flex items-center gap-4 p-4 bg-surface-50 border border-surface-200/50 rounded-lg">
                         <div className="text-center">
@@ -677,76 +868,114 @@ curl "http://localhost:8080/search?q=jwt"
                         </div>
                     </div>
                 </SubSection>
+
+                <SubSection title="TL;DR for agents">
+                    <CodeBlock 
+                        title="Recommended defaults"
+                        language="bash"
+                        code={`# One-time index for the repo
+docdexd index --repo .
+
+# Serve HTTP (summary-first, snippets optional)
+docdexd serve --repo . --host 127.0.0.1 --port 46137 --log warn
+
+# MCP server (stdio)
+docdexd mcp --repo . --log warn --max-results 8`}
+                    />
+                    <p className="text-gray-400 text-sm mt-2">Add <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">.docdex/</code> to <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">.gitignore</code>; prefer summary-first searches and fetch snippets only as needed.</p>
+                </SubSection>
             </Section>
 
             <Section id="mcp-tools" title="Available Tools">
                 <p className="text-gray-400 mb-8">
-                    When connected, Docdex exposes the following tools to the agent. The model uses these tools to query your documentation autonomously.
+                    When connected, Docdex exposes these MCP tools (from the README). The model uses them to search, open files, and refresh the index.
                 </p>
-                
-                <CodeBlock 
-                    title="Tool Definition (JSON Schema)"
-                    language="json"
-                    code={`{
-  "name": "search",
-  "description": "Semantic search. Use to find code snippets.",
-  "inputSchema": {
-    "type": "object",
-    "properties": {
-      "query": { "type": "string" },
-      "limit": { "type": "number" }
-    },
-    "required": ["query"]
-  }
-}`}
-                />
 
                 <div className="space-y-8 mt-8">
                     <div className="border border-surface-200/50 rounded-xl p-6 bg-surface-50/20">
                         <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-brand-400 font-mono text-lg font-bold">search</h4>
+                            <h4 className="text-brand-400 font-mono text-lg font-bold">docdex_search</h4>
                             <span className="text-xs bg-surface-200 text-gray-300 px-2 py-1 rounded">Read-Only</span>
                         </div>
                         <p className="text-gray-400 text-sm mb-4">
-                            Performs a semantic fuzzy search on the indexed codebase. Returns a list of relevant code snippets with file paths and line numbers.
+                            Performs a search on the indexed docs. Returns rel_path, summary, snippet (optional), score, and token_estimate.
                         </p>
                         <h5 className="text-xs font-bold text-gray-500 uppercase mb-2">Parameters</h5>
                         <ArgsTable 
                             args={[
-                                { name: 'query', description: 'The search string. Can be natural language or code keywords.', type: 'string', required: true },
-                                { name: 'limit', description: 'Max number of snippets to return (default: 5).', type: 'number', required: false },
+                                { name: 'query', description: 'Search text.', type: 'string', required: true },
+                                { name: 'limit', description: 'Max results (default clamp 8).', type: 'number', required: false },
+                                { name: 'project_root', description: 'Optional workspace root.', type: 'string', required: false },
                             ]} 
                         />
                     </div>
 
                     <div className="border border-surface-200/50 rounded-xl p-6 bg-surface-50/20">
                          <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-brand-400 font-mono text-lg font-bold">read_file</h4>
+                            <h4 className="text-brand-400 font-mono text-lg font-bold">docdex_open</h4>
                             <span className="text-xs bg-surface-200 text-gray-300 px-2 py-1 rounded">Read-Only</span>
-                        </div>
+                         </div>
                         <p className="text-gray-400 text-sm mb-4">
-                            Reads the full content of a specific file. Use this when `search` returns a snippet that looks promising, but the agent needs the full context.
+                            Reads a specific file with optional line windows for additional context.
                         </p>
                         <h5 className="text-xs font-bold text-gray-500 uppercase mb-2">Parameters</h5>
                          <ArgsTable 
                             args={[
-                                { name: 'path', description: 'Relative path to the file (e.g. "src/utils/helper.ts").', type: 'string', required: true },
+                                { name: 'path', description: 'Relative path to the file.', type: 'string', required: true },
+                                { name: 'start_line', description: 'Optional start line.', type: 'number', required: false },
+                                { name: 'end_line', description: 'Optional end line.', type: 'number', required: false },
+                                { name: 'project_root', description: 'Optional workspace root.', type: 'string', required: false },
                             ]} 
                         />
                     </div>
 
                     <div className="border border-surface-200/50 rounded-xl p-6 bg-surface-50/20">
                          <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-brand-400 font-mono text-lg font-bold">list_files</h4>
+                            <h4 className="text-brand-400 font-mono text-lg font-bold">docdex_files</h4>
                             <span className="text-xs bg-surface-200 text-gray-300 px-2 py-1 rounded">Read-Only</span>
-                        </div>
+                         </div>
                         <p className="text-gray-400 text-sm mb-4">
-                            Lists files in a specific directory. Useful for exploring the project structure or finding file names.
+                            Lists indexed docs with summaries and token estimates.
                         </p>
                         <h5 className="text-xs font-bold text-gray-500 uppercase mb-2">Parameters</h5>
                          <ArgsTable 
                             args={[
-                                { name: 'path', description: 'Directory path to list. Defaults to root.', type: 'string', required: false },
+                                { name: 'limit', description: 'Max docs to list (default 200, max 1000).', type: 'number', required: false },
+                                { name: 'offset', description: 'Pagination offset.', type: 'number', required: false },
+                                { name: 'project_root', description: 'Optional workspace root.', type: 'string', required: false },
+                            ]} 
+                        />
+                    </div>
+
+                    <div className="border border-surface-200/50 rounded-xl p-6 bg-surface-50/20">
+                         <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-brand-400 font-mono text-lg font-bold">docdex_index</h4>
+                            <span className="text-xs bg-surface-200 text-gray-300 px-2 py-1 rounded">Write</span>
+                        </div>
+                        <p className="text-gray-400 text-sm mb-4">
+                            Reindex everything or ingest specific files.
+                        </p>
+                        <h5 className="text-xs font-bold text-gray-500 uppercase mb-2">Parameters</h5>
+                         <ArgsTable 
+                            args={[
+                                { name: 'paths', description: 'Optional list of files/directories to ingest (empty reindexes everything).', type: 'string[]', required: false },
+                                { name: 'project_root', description: 'Optional workspace root.', type: 'string', required: false },
+                            ]} 
+                        />
+                    </div>
+
+                    <div className="border border-surface-200/50 rounded-xl p-6 bg-surface-50/20">
+                         <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-brand-400 font-mono text-lg font-bold">docdex_stats</h4>
+                            <span className="text-xs bg-surface-200 text-gray-300 px-2 py-1 rounded">Read-Only</span>
+                        </div>
+                        <p className="text-gray-400 text-sm mb-4">
+                            Returns index stats (doc count, state dir, size, last updated timestamps).
+                        </p>
+                        <h5 className="text-xs font-bold text-gray-500 uppercase mb-2">Parameters</h5>
+                         <ArgsTable 
+                            args={[
+                                { name: 'project_root', description: 'Optional workspace root.', type: 'string', required: false },
                             ]} 
                         />
                     </div>
@@ -768,15 +997,15 @@ curl "http://localhost:8080/search?q=jwt"
                         code={`{
   "mcpServers": {
     "docdex": {
-      "command": "docdex",
-      "args": ["mcp", "--dir", "/Users/me/projects/my-app"]
+      "command": "docdexd",
+      "args": ["mcp", "--repo", "/Users/me/projects/my-app", "--log", "warn", "--max-results", "8"]
     }
   }
 }`}
                     />
                      <div className="flex items-start gap-2 text-xs text-orange-400 mt-4 bg-orange-400/10 p-3 rounded-lg border border-orange-400/20">
                         <AlertCircle className="w-4 h-4 shrink-0" />
-                        <span>Important: You must provide the absolute path to the directory you want to index via the `--dir` flag in manual config mode.</span>
+                        <span>Important: Provide the absolute repo path via `--repo` when configuring manually.</span>
                      </div>
                 </SubSection>
 
@@ -786,8 +1015,11 @@ curl "http://localhost:8080/search?q=jwt"
                     </p>
                     <ArgsTable 
                         args={[
-                             { name: 'DOCDEX_LOG_LEVEL', description: 'Set logging verbosity (debug, info, error).', type: 'string', required: false },
-                             { name: 'DOCDEX_HOME', description: 'Override the default index storage location (~/.docdex).', type: 'string', required: false },
+                             { name: 'DOCDEX_AUTH_TOKEN', description: 'Bearer token for secure mode.', type: 'string', required: false },
+                             { name: 'DOCDEX_STATE_DIR', description: 'Override index storage path.', type: 'string', required: false },
+                             { name: 'DOCDEX_MAX_LIMIT', description: 'Clamp HTTP limit (default 8).', type: 'number', required: false },
+                             { name: 'DOCDEX_EXCLUDE_DIRS', description: 'Extra directory names to skip (comma-separated).', type: 'string', required: false },
+                             { name: 'DOCDEX_EXCLUDE_PREFIXES', description: 'Extra relative prefixes to skip (comma-separated).', type: 'string', required: false },
                         ]} 
                     />
                 </SubSection>
@@ -803,13 +1035,13 @@ curl "http://localhost:8080/search?q=jwt"
                         Recommended System Instruction
                     </h4>
                     <p className="text-gray-400 text-sm italic mb-4">
-                        "You have access to a local documentation search tool called 'docdex' via the MCP server. When the user asks a technical question about the codebase, ALWAYS use the 'search' tool first to retrieve relevant context before answering. If the snippet is cut off, use 'read_file' to get the full content."
+                        "You have access to a local documentation search tool called 'docdex' via the MCP server. When the user asks a technical question about the codebase, ALWAYS call `docdex_search` first to retrieve summaries, then `docdex_open` if you need full context from a file."
                     </p>
                 </div>
                  <CodeBlock 
                     title="System Prompt Example"
                     language="text"
-                    code={`You have access to a local documentation tool called 'docdex'. Use it to search the codebase before answering questions.`}
+                    code={`You have access to a local documentation tool called 'docdex'. Use docdex_search before answering; if a snippet is cut off, call docdex_open on the referenced file.`}
                 />
             </Section>
 
@@ -824,10 +1056,10 @@ curl "http://localhost:8080/search?q=jwt"
                     code={`User: "How does auth work?"
 
 Thought: I need to check the auth implementation.
-Call: docdex.search("authentication middleware")
+Call: docdex_search("authentication middleware")
 
 Thought: The snippet in src/auth.ts looks relevant but I need the full verification function.
-Call: docdex.read_file("src/auth.ts")
+Call: docdex_open("src/auth.ts")
 
 Response: "Authentication is handled via JWT..."`}
                 />
@@ -836,17 +1068,17 @@ Response: "Authentication is handled via JWT..."`}
                 <div className="relative">
                   <span className="absolute -left-[39px] top-0 w-6 h-6 rounded-full bg-brand-500 flex items-center justify-center text-black text-xs font-bold">1</span>
                   <h4 className="text-white font-bold mb-1">Broad Search</h4>
-                  <p className="text-sm text-gray-400">The agent calls <code className="text-brand-400">search("authentication middleware")</code> to find relevant files.</p>
+                  <p className="text-sm text-gray-400">The agent calls <code className="text-brand-400">docdex_search("authentication middleware")</code> to find relevant files.</p>
                 </div>
                 <div className="relative">
                   <span className="absolute -left-[39px] top-0 w-6 h-6 rounded-full bg-surface-200 flex items-center justify-center text-black text-xs font-bold">2</span>
                   <h4 className="text-white font-bold mb-1">Snippet Analysis</h4>
-                  <p className="text-sm text-gray-400">Docdex returns 5-10 short snippets. The agent analyzes them to see if the answer is immediately visible.</p>
+                  <p className="text-sm text-gray-400">Docdex returns up to 8 short snippets by default. The agent analyzes them to see if the answer is immediately visible.</p>
                 </div>
                  <div className="relative">
                   <span className="absolute -left-[39px] top-0 w-6 h-6 rounded-full bg-surface-200 flex items-center justify-center text-black text-xs font-bold">3</span>
                   <h4 className="text-white font-bold mb-1">Deep Read (Optional)</h4>
-                  <p className="text-sm text-gray-400">If the snippet is cut off or insufficient, the agent calls <code className="text-brand-400">read_file("src/auth.ts")</code> to ingest the entire file.</p>
+                  <p className="text-sm text-gray-400">If the snippet is cut off or insufficient, the agent calls <code className="text-brand-400">docdex_open("src/auth.ts")</code> to ingest the specific file.</p>
                 </div>
                 <div className="relative">
                   <span className="absolute -left-[39px] top-0 w-6 h-6 rounded-full bg-surface-200 flex items-center justify-center text-black text-xs font-bold">4</span>
@@ -900,7 +1132,7 @@ Response: "Authentication is handled via JWT..."`}
                  <CodeBlock 
                     language="bash" 
                     title="Terminal"
-                    code="npx @modelcontextprotocol/inspector docdex mcp --dir ." 
+                    code="npx @modelcontextprotocol/inspector docdexd mcp --repo ." 
                  />
               </SubSection>
 

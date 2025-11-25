@@ -4,17 +4,17 @@ const CodeDemo: React.FC = () => {
   const [activeLine, setActiveLine] = useState<number | null>(null);
 
   const codeLines = [
-    { num: 1, code: "docdex index --dir ./src --watch", comment: "// Start indexing your source code" },
-    { num: 2, code: "docdex serve --port 8080", comment: "// Start the HTTP server" },
+    { num: 1, code: "docdexd index --repo /path/to/repo", comment: "// Build the on-disk index (.docdex/index)" },
+    { num: 2, code: "docdexd serve --repo /path/to/repo --host 127.0.0.1 --port 46137 --log info --auth-token <token>", comment: "// Serve HTTP API with live watching (secure mode on by default)" },
     { num: 3, code: "", comment: "" },
-    { num: 4, code: "# Query via curl (or your Agent)", comment: "" },
-    { num: 5, code: "curl \"http://localhost:8080/search?q=auth\"", comment: "// Get relevant snippets in JSON" },
+    { num: 4, code: "# Query via CLI (shares the same index)", comment: "" },
+    { num: 5, code: "docdexd query --repo /path/to/repo --query \"otp flow\" --limit 5", comment: "// Summary + snippets tuned for assistants" },
   ];
 
   const explanations: Record<number, string> = {
-    1: "Scans the specified directory recursively. The --watch flag enables real-time updates when files change.",
-    2: "Spin up a lightweight HTTP server to expose the search API to other tools or agents.",
-    5: "Returns a JSON payload containing the most relevant file snippets, file paths, and scores. Perfect for RAG context injection."
+    1: "Builds a Tantivy-backed index under <repo>/.docdex/index with 0700 permissions and no external calls.",
+    2: "Secure mode requires an auth token, loopback allowlist, and rate limiting by default. Add --secure-mode=false for local, token-free use.",
+    5: "CLI and HTTP share the same index; use a small --limit to keep prompt payloads compact for assistants."
   };
 
   return (
@@ -27,7 +27,7 @@ const CodeDemo: React.FC = () => {
             Commands that make sense.
           </h2>
           <p className="text-gray-500 text-lg mb-10 leading-relaxed">
-            Docdex is built to be intuitive. No complex configuration files required. Just point it at your docs and go.
+            Docdex ships as a single binary download. Point it at your docs, keep the index local, and reuse it across CLI, HTTP, or MCP.
           </p>
           
           <div className="space-y-4">
