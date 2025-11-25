@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, Settings, PlayCircle, Download, Terminal, Copy, Check, Command, FileJson, Filter } from 'lucide-react';
+import { ChevronRight, Settings, PlayCircle, Download, Terminal, Copy, Check, Command, FileJson, Filter, Server, Zap, Database } from 'lucide-react';
 
 const CodeBlock = ({ code, language = 'bash', title = 'Terminal' }: { code: string, language?: 'bash' | 'json', title?: string }) => {
   const [copied, setCopied] = useState(false);
@@ -80,91 +80,174 @@ const CodeBlock = ({ code, language = 'bash', title = 'Terminal' }: { code: stri
 };
 
 const Documentation: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'install' | 'usage' | 'mcp'>('install');
+  const [activeTab, setActiveTab] = useState<'quickstart' | 'indexing' | 'querying' | 'server' | 'mcp'>('quickstart');
 
   const tabs = [
-    { id: 'install', label: 'Installation', icon: Download },
-    { id: 'usage', label: 'Basic Usage', icon: Terminal },
-    { id: 'mcp', label: 'MCP Integration', icon: Settings },
+    { id: 'quickstart', label: 'Quick Start', icon: Zap },
+    { id: 'indexing', label: 'Indexing & Watch', icon: Database },
+    { id: 'querying', label: 'CLI Query', icon: Terminal },
+    { id: 'server', label: 'HTTP Server', icon: Server },
+    { id: 'mcp', label: 'MCP Server', icon: Settings },
   ];
 
   const content = {
-    install: (
+    quickstart: (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                <span className="p-2 bg-brand-400 rounded-lg text-black"><Download className="w-5 h-5" /></span>
-                Getting Started
+                <span className="p-2 bg-brand-400 rounded-lg text-black"><Zap className="w-5 h-5" /></span>
+                Up and Running
             </h3>
             <p className="text-gray-400 mb-8 leading-relaxed text-lg">
-                Docdex is distributed as a standalone binary via NPM. It requires Node.js 18 or higher to be installed on your system.
+                Get Docdex installed and running in under 30 seconds. Requires Node.js 18+.
             </p>
 
             <div className="space-y-8">
                 <div>
                     <h4 className="text-white font-medium mb-2 flex items-center gap-2 text-sm uppercase tracking-wider text-brand-400">
-                        Global Install
+                        1. Install & Index
                     </h4>
                     <CodeBlock 
                         title="Terminal"
                         language="bash" 
-                        code={`npm install -g docdex\n\n# Verify installation\ndocdex --version`} 
+                        code={`# Install globally
+npm install -g docdex
+
+# Index current directory
+docdex index .`} 
+                    />
+                </div>
+                <div>
+                    <h4 className="text-white font-medium mb-2 flex items-center gap-2 text-sm uppercase tracking-wider text-brand-400">
+                        2. Query
+                    </h4>
+                    <CodeBlock 
+                        title="Terminal"
+                        language="bash" 
+                        code={`# Run a test query
+docdex query "authentication"`} 
                     />
                 </div>
             </div>
         </div>
     ),
-    usage: (
+    indexing: (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                <span className="p-2 bg-brand-400 rounded-lg text-black"><Terminal className="w-5 h-5" /></span>
-                Core Commands
+            <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <span className="p-2 bg-brand-400 rounded-lg text-black"><Database className="w-5 h-5" /></span>
+                Indexing Options
             </h3>
             <p className="text-gray-400 mb-8 leading-relaxed">
-                The CLI is built to be intuitive. Index your code, search it instantly, or serve it over HTTP.
+                Control how Docdex scans your files. Use watch mode for development or filtering flags to keep your index clean.
             </p>
 
             <div className="space-y-10">
                 <div>
                     <h4 className="text-white font-medium flex items-center gap-2 mb-2">
-                        <Command className="w-4 h-4 text-brand-400" /> Indexing & Searching
+                        <Filter className="w-4 h-4 text-brand-400" /> Watch Mode
                     </h4>
-                    <p className="text-sm text-gray-500 mb-4">Point docdex at any directory to start the engine.</p>
+                    <p className="text-sm text-gray-500 mb-4">Automatically updates the index when files change.</p>
                     <CodeBlock 
-                        title="Terminal — Indexing"
+                        title="Terminal"
                         language="bash"
-                        code={`# Index current directory recursively
-docdex index .
-
-# Search for a specific term
-docdex search "authentication middleware"`}
+                        code={`docdex index . --watch`}
                     />
                 </div>
 
                 <div>
                     <h4 className="text-white font-medium flex items-center gap-2 mb-2">
-                        <Filter className="w-4 h-4 text-brand-400" /> Advanced Filtering
+                        <Filter className="w-4 h-4 text-brand-400" /> Filtering Extensions
                     </h4>
-                    <p className="text-sm text-gray-500 mb-4">Control exactly what gets indexed to save space and improve relevance.</p>
+                    <p className="text-sm text-gray-500 mb-4">Only index specific file types (comma-separated).</p>
                     <CodeBlock 
-                        title="Terminal — Filtering"
+                        title="Terminal"
                         language="bash"
-                        code={`# Only index TypeScript and Rust files
-docdex index ./src --ext "ts,rs"
+                        code={`# Only index TypeScript and Markdown
+docdex index . --ext "ts,tsx,md"`}
+                    />
+                </div>
 
-# Ignore node_modules and build directories
-docdex index . --ignore "**/node_modules,**/dist"`}
+                <div>
+                    <h4 className="text-white font-medium flex items-center gap-2 mb-2">
+                        <Filter className="w-4 h-4 text-brand-400" /> Ignoring Paths
+                    </h4>
+                    <p className="text-sm text-gray-500 mb-4">Exclude directories using glob patterns.</p>
+                    <CodeBlock 
+                        title="Terminal"
+                        language="bash"
+                        code={`docdex index . --ignore "**/node_modules,**/dist,**/*.test.ts"`}
+                    />
+                </div>
+            </div>
+        </div>
+    ),
+    querying: (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <span className="p-2 bg-brand-400 rounded-lg text-black"><Terminal className="w-5 h-5" /></span>
+                CLI Querying
+            </h3>
+            <p className="text-gray-400 mb-8 leading-relaxed">
+                Search your indexed documents directly from the terminal. Useful for quick lookups or piping into other tools.
+            </p>
+
+            <div className="space-y-10">
+                <div>
+                    <h4 className="text-white font-medium flex items-center gap-2 mb-2">
+                        <Command className="w-4 h-4 text-brand-400" /> Basic Search
+                    </h4>
+                    <CodeBlock 
+                        title="Terminal"
+                        language="bash"
+                        code={`docdex query "middleware authentication"`}
                     />
                 </div>
 
                 <div>
                      <h4 className="text-white font-medium flex items-center gap-2 mb-2">
-                        <FileJson className="w-4 h-4 text-brand-400" /> Output Formats
+                        <FileJson className="w-4 h-4 text-brand-400" /> JSON Output
+                    </h4>
+                    <p className="text-sm text-gray-500 mb-4">Return machine-readable results.</p>
+                    <CodeBlock 
+                        title="Terminal"
+                        language="bash"
+                        code={`docdex query "database schema" --json`}
+                    />
+                </div>
+            </div>
+        </div>
+    ),
+    server: (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <span className="p-2 bg-brand-400 rounded-lg text-black"><Server className="w-5 h-5" /></span>
+                HTTP Server
+            </h3>
+            <p className="text-gray-400 mb-8 leading-relaxed">
+                Expose your index via a lightweight REST API. Perfect for integrating with non-MCP tools or internal dashboards.
+            </p>
+
+            <div className="space-y-10">
+                <div>
+                    <h4 className="text-white font-medium flex items-center gap-2 mb-2">
+                        <PlayCircle className="w-4 h-4 text-brand-400" /> Start Server
                     </h4>
                     <CodeBlock 
-                        title="Terminal — JSON Output"
+                        title="Terminal"
                         language="bash"
-                        code={`# Return results as JSON for programmatic use
-docdex search "database schema" --json`}
+                        code={`# Start on port 8080 (default)
+docdex serve --port 8080`}
+                    />
+                </div>
+
+                <div>
+                     <h4 className="text-white font-medium flex items-center gap-2 mb-2">
+                        <Command className="w-4 h-4 text-brand-400" /> API Usage
+                    </h4>
+                    <p className="text-sm text-gray-500 mb-4">Query the API using curl.</p>
+                    <CodeBlock 
+                        title="Terminal"
+                        language="bash"
+                        code={`curl "http://localhost:8080/search?q=auth"`}
                     />
                 </div>
             </div>
@@ -174,7 +257,7 @@ docdex search "database schema" --json`}
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
                 <span className="p-2 bg-brand-400 rounded-lg text-black"><Settings className="w-5 h-5" /></span>
-                MCP Configuration
+                MCP Integration
             </h3>
             <p className="text-gray-400 mb-8 leading-relaxed">
                 Docdex implements the Model Context Protocol natively. You can add it to your agents automatically via CLI or manually via config files.

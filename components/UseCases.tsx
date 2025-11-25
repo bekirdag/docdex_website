@@ -20,20 +20,20 @@ const UseCases: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-brand-400/5 to-transparent opacity-100 transition-opacity duration-500" />
             <div className="p-10 relative z-10">
               <div className="flex justify-between items-start mb-6">
-                <h3 className="text-2xl font-semibold text-white">The Autonomous Coder</h3>
-                <span className="bg-surface-200/80 border border-surface-300/50 text-gray-300 text-xs px-3 py-1 rounded-full">Dev Tooling</span>
+                <h3 className="text-2xl font-semibold text-white">Agentic Intelligence</h3>
+                <span className="bg-surface-200/80 border border-surface-300/50 text-gray-300 text-xs px-3 py-1 rounded-full">MCP Ready</span>
               </div>
               <p className="text-gray-500 mb-8 leading-relaxed">
-                When using agents like Cline or Bolt.new, providing the entire codebase consumes context windows instantly. Docdex acts as the "long term memory" for your agent.
+                Give your AI agents a brain, not just a prompt. By exposing your documentation via MCP, Docdex allows tools like Claude to autonomously search and retrieve technical context without manual copy-pasting.
               </p>
               <div className="bg-black/40 p-6 rounded-2xl border border-surface-200/30 text-sm font-mono text-gray-400 shadow-xl backdrop-blur-md">
                 <div className="flex items-center gap-2 mb-2">
-                   <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                   <span>Context Window: <span className="text-gray-300">Full</span></span>
+                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                   <span>Context Load: <span className="text-gray-300">Minimal</span></span>
                 </div>
                 <div className="flex items-center gap-2">
-                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                   <span>Docdex Retrieval: <span className="text-brand-400">Precision</span></span>
+                   <div className="w-2 h-2 rounded-full bg-brand-400"></div>
+                   <span>Agent Access: <span className="text-brand-400">Unlimited</span></span>
                 </div>
               </div>
             </div>
@@ -44,20 +44,20 @@ const UseCases: React.FC = () => {
              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-100 transition-opacity duration-500" />
             <div className="p-10 relative z-10">
               <div className="flex justify-between items-start mb-6">
-                <h3 className="text-2xl font-semibold text-white">Enterprise Knowledge</h3>
-                <span className="bg-surface-200/80 border border-surface-300/50 text-gray-300 text-xs px-3 py-1 rounded-full">Security</span>
+                <h3 className="text-2xl font-semibold text-white">Zero-Trust Privacy</h3>
+                <span className="bg-surface-200/80 border border-surface-300/50 text-gray-300 text-xs px-3 py-1 rounded-full">Local First</span>
               </div>
               <p className="text-gray-500 mb-8 leading-relaxed">
-                Companies often have gigabytes of markdown, PDFs, and internal wikis. sending this to cloud vector DBs is a security risk.
+                Your codebase is your competitive advantage. Don't leak it to cloud vector stores. Docdex offers enterprise-grade search capabilities that run 100% locally on your hardware.
               </p>
               <div className="grid grid-cols-2 gap-4">
                  <div className="bg-black/40 p-4 rounded-xl border border-surface-200/30 backdrop-blur-md">
                     <div className="text-2xl font-bold text-white mb-1">100%</div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">On-premise</div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Offline</div>
                  </div>
                  <div className="bg-black/40 p-4 rounded-xl border border-surface-200/30 backdrop-blur-md">
-                    <div className="text-2xl font-bold text-white mb-1">0ms</div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Network Latency</div>
+                    <div className="text-2xl font-bold text-white mb-1">0</div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Cloud APIs</div>
                  </div>
               </div>
             </div>
