@@ -18,8 +18,8 @@ const CodeDemo: React.FC = () => {
   };
 
   return (
-    <section className="py-24 bg-page relative border-y border-surface-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-start gap-16">
+    <section className="py-24 relative border-y border-surface-100 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-surface-100/20 via-page to-page">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center gap-16">
         
         <div className="lg:w-1/2 pt-8">
           <span className="text-brand-400 font-mono text-sm tracking-wider uppercase">Developers</span>
@@ -66,8 +66,7 @@ const CodeDemo: React.FC = () => {
               {codeLines.map((line, idx) => (
                 <div 
                   key={idx} 
-                  className={`relative group flex ${activeLine === line.num ? 'bg-surface-100/30 -mx-6 px-6' : ''}`}
-                  onMouseEnter={() => line.num && setActiveLine(line.num)}
+                  className={`relative group flex transition-colors duration-200 ${activeLine === line.num ? 'bg-surface-100/30 -mx-6 px-6 border-l-2 border-brand-400' : ''}`}
                 >
                   <span className="text-gray-700 select-none mr-4 w-6 text-right">{line.num}</span>
                   <div className="flex-1 whitespace-pre">
