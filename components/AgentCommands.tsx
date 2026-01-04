@@ -5,11 +5,36 @@ const AgentCommands: React.FC = () => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const commands = [
-    { id: 'codex', label: 'Codex CLI', cmd: 'codex mcp add docdex -- docdexd mcp', description: 'Standard integration' },
-    { id: 'claude', label: 'Claude Desktop', cmd: 'claude mcp add --transport stdio docdex -- docdexd mcp', description: 'Requires latest desktop app' },
-    { id: 'cursor', label: 'Cursor', cmd: 'cursor mcp add docdex -- docdexd mcp', description: 'IDE integration' },
-    { id: 'gemini', label: 'Gemini', cmd: 'gemini mcp add docdex docdexd mcp', description: 'Multimodal agents' },
-    { id: 'droid', label: 'Droid', cmd: 'droid mcp add docdex "docdexd mcp"', description: 'Android environment' },
+    {
+      id: 'daemon',
+      label: 'Shared daemon (HTTP + MCP)',
+      cmd: 'docdexd daemon --repo /path/to/repo --host 127.0.0.1 --port 3210',
+      description: 'One process for HTTP, SSE MCP, and watchers.'
+    },
+    {
+      id: 'mcp-add-codex',
+      label: 'Auto-config Codex',
+      cmd: 'docdexd mcp-add --agent codex --repo /path/to/repo --max-results 8 --log warn',
+      description: 'Writes MCP config for Codex if present.'
+    },
+    {
+      id: 'mcp-add-cursor',
+      label: 'Auto-config Cursor',
+      cmd: 'docdexd mcp-add --agent cursor --repo /path/to/repo --max-results 8 --log warn',
+      description: 'Updates Cursor MCP config when detected.'
+    },
+    {
+      id: 'mcp-stdio',
+      label: 'Legacy stdio MCP',
+      cmd: 'docdexd mcp --repo /path/to/repo --log warn --max-results 8',
+      description: 'Use when HTTP/SSE is not supported.'
+    },
+    {
+      id: 'mcp-add-all',
+      label: 'Auto-config all detected clients',
+      cmd: 'docdexd mcp-add --all --repo /path/to/repo',
+      description: 'Scans for supported clients and injects MCP entries.'
+    }
   ];
 
   const handleCopy = (cmd: string, index: number) => {
@@ -26,10 +51,10 @@ const AgentCommands: React.FC = () => {
         <div className="mb-12">
           <span className="text-brand-400 font-mono text-sm tracking-wider uppercase">Integration</span>
           <h2 className="text-3xl md:text-4xl font-semibold text-white mt-4 tracking-tight">
-            Connect your agents.
+            Connect your agents in minutes.
           </h2>
           <p className="text-gray-500 mt-4 text-lg max-w-xl">
-            Copy and paste these commands to register the MCP server with your favorite tools instantly.
+            Use the shared daemon for SSE MCP, or fall back to the stdio server for legacy clients.
           </p>
         </div>
 

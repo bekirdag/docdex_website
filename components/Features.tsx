@@ -1,43 +1,61 @@
 import React from 'react';
-import { Server, Zap, Shield, Search, FileJson, Clock } from 'lucide-react';
+import { Server, Zap, Shield, Search, FileJson, Clock, Brain, Network, Sparkles } from 'lucide-react';
 
 const Features: React.FC = () => {
   const features = [
     {
-      title: "Token Optimization",
-      desc: "Stop feeding entire files to LLMs. Docdex retrieves only relevant snippets, reducing token usage by up to 90%.",
-      icon: Zap,
-      badge: "Cost Saver"
-    },
-    {
-      title: "Local & Secure",
-      desc: "Your data never leaves your machine. Indexes are stored locally. Perfect for proprietary codebases.",
-      icon: Shield,
-      badge: "Private"
-    },
-    {
-      title: "Smart Indexing",
-      desc: "Intelligent file watcher detects changes instantly. Supports Markdown, JSON, Text, and Code files.",
+      title: "Doc + code indexing",
+      desc: "One local index for docs, source, and snippets. Watch mode keeps the knowledge base up to date automatically.",
       icon: FileJson,
-      badge: "Real-time"
+      badge: "Local"
     },
     {
-      title: "HTTP Server API",
-      desc: "Expose your index via a lightweight REST API. Let any service in your infrastructure query your documentation.",
+      title: "AST + impact graph",
+      desc: "Structural code intelligence across Rust, Python, JS/TS, Go, Java, C#, and more. See definitions and downstream impact.",
+      icon: Network,
+      badge: "Code Intel"
+    },
+    {
+      title: "Repo memory",
+      desc: "Store project facts and decisions for retrieval later. Ideal for runbooks, edge cases, and conventions.",
+      icon: Brain,
+      badge: "Persistent"
+    },
+    {
+      title: "Agent memory",
+      desc: "Global preference memory keeps agent behavior consistent across repos and teams.",
+      icon: Sparkles,
+      badge: "Agentic"
+    },
+    {
+      title: "MCP + HTTP",
+      desc: "Serve the same index over HTTP, SSE, and MCP. Agents and tools share the same trusted context.",
       icon: Server,
-      badge: "Connect"
+      badge: "Shared"
     },
     {
-      title: "Fuzzy Search",
-      desc: "Tolerates typos and partial matches. Finds what you mean, not just exactly what you typed.",
+      title: "Web search refinement",
+      desc: "Optional web discovery with strict gating and local LLM filtering via Ollama for high-precision results.",
       icon: Search,
-      badge: "Tantivy"
+      badge: "Tier 2"
     },
     {
-      title: "Set & Forget",
-      desc: "Install as a system daemon. It runs silently in the background, keeping your knowledge base fresh.",
+      title: "Secure by default",
+      desc: "TLS, auth tokens, allowlists, rate limits, and audit logs keep the daemon safe on any network.",
+      icon: Shield,
+      badge: "TLS + Auth"
+    },
+    {
+      title: "Install and forget",
+      desc: "Auto-configures supported clients, discovers models, and runs as a single shared daemon.",
       icon: Clock,
-      badge: "Unix"
+      badge: "Autopilot"
+    },
+    {
+      title: "Token discipline",
+      desc: "Summaries and snippets keep prompts short while preserving the most relevant context.",
+      icon: Zap,
+      badge: "Efficient"
     }
   ];
 
@@ -54,11 +72,11 @@ const Features: React.FC = () => {
                     <span className="text-xs font-medium text-gray-300 tracking-wide uppercase">Core Capabilities</span>
                 </div>
                 <h2 className="text-4xl md:text-5xl font-semibold text-white tracking-tight text-balance leading-[1.1]">
-                    Everything you need<br />to power your agents.
+                    Everything your agents need,<br />without the cloud.
                 </h2>
             </div>
              <p className="text-gray-400 text-lg max-w-sm leading-relaxed">
-                Built for performance, security, and developer experience. No fluff, just raw indexing power.
+                Built for performance, security, and developer experience. Open source and free, with serious engineering underneath.
             </p>
         </div>
 

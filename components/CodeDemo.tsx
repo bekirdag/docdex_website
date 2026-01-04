@@ -4,17 +4,19 @@ const CodeDemo: React.FC = () => {
   const [activeLine, setActiveLine] = useState<number | null>(null);
 
   const codeLines = [
-    { num: 1, code: "docdexd index --repo /path/to/repo", comment: "// Build the on-disk index (.docdex/index)" },
-    { num: 2, code: "docdexd serve --repo /path/to/repo --host 127.0.0.1 --port 46137 --log info --auth-token <token>", comment: "// Serve HTTP API with live watching (secure mode on by default)" },
+    { num: 1, code: "docdexd index --repo /path/to/repo", comment: "// Build the on-disk index (~/.docdex/state/repos/<id>/index)" },
+    { num: 2, code: "docdexd daemon --repo /path/to/repo --host 127.0.0.1 --port 3210", comment: "// Shared HTTP + MCP daemon (SSE at /sse)" },
     { num: 3, code: "", comment: "" },
-    { num: 4, code: "# Query via CLI (shares the same index)", comment: "" },
-    { num: 5, code: "docdexd query --repo /path/to/repo --query \"otp flow\" --limit 5", comment: "// Summary + snippets tuned for assistants" },
+    { num: 4, code: "# Query via CLI (same index as HTTP + MCP)", comment: "" },
+    { num: 5, code: "docdexd chat --repo /path/to/repo --query \"auth flow\" --limit 5", comment: "// Summary + snippets tuned for agents" },
+    { num: 6, code: "curl \"http://127.0.0.1:3210/v1/graph/impact?file=src/app.ts&maxDepth=2\"", comment: "// Impact graph in one call" },
   ];
 
   const explanations: Record<number, string> = {
-    1: "Builds a Tantivy-backed index under <repo>/.docdex/index with 0700 permissions and no external calls.",
-    2: "Secure mode requires an auth token, loopback allowlist, and rate limiting by default. Add --secure-mode=false for local, token-free use.",
-    5: "CLI and HTTP share the same index; use a small --limit to keep prompt payloads compact for assistants."
+    1: "Indexes docs and source files under ~/.docdex/state so the same data powers CLI, HTTP, and MCP.",
+    2: "The daemon runs the HTTP API, SSE MCP, and file watcher in one process for all agents.",
+    5: "Chat uses the same ranked results and summaries; keep limits small for tight prompt budgets.",
+    6: "Impact graph endpoints show downstream dependencies before you refactor."
   };
 
   return (
@@ -24,10 +26,10 @@ const CodeDemo: React.FC = () => {
         <div className="lg:w-1/2 pt-8">
           <span className="text-brand-400 font-mono text-sm tracking-wider uppercase">Developers</span>
           <h2 className="text-4xl font-semibold text-white mt-4 mb-6 tracking-tight">
-            Commands that make sense.
+            Commands that match the product.
           </h2>
           <p className="text-gray-500 text-lg mb-10 leading-relaxed">
-            Docdex ships as a single binary download. Point it at your docs, keep the index local, and reuse it across CLI, HTTP, or MCP.
+            Docdex ships as a single binary download. Point it at your repo, keep the index local, and reuse it across CLI, HTTP, MCP, and memory.
           </p>
           
           <div className="space-y-4">

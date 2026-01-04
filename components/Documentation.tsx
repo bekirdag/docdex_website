@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { ChevronRight, Settings, PlayCircle, Download, Terminal, Copy, Check, Command, FileJson, Filter, Server, Zap, Database } from 'lucide-react';
 
+interface DocumentationProps {
+  onNavigate?: (path: string) => void;
+}
+
 const CodeBlock = ({ code, language = 'bash', title = 'Terminal' }: { code: string, language?: 'bash' | 'json', title?: string }) => {
   const [copied, setCopied] = useState(false);
 
@@ -79,13 +83,13 @@ const CodeBlock = ({ code, language = 'bash', title = 'Terminal' }: { code: stri
   );
 };
 
-const Documentation: React.FC = () => {
+const Documentation: React.FC<DocumentationProps> = ({ onNavigate }) => {
   const [activeTab, setActiveTab] = useState<'quickstart' | 'indexing' | 'querying' | 'server' | 'mcp'>('quickstart');
 
   const tabs = [
     { id: 'quickstart', label: 'Quick Start', icon: Zap },
     { id: 'indexing', label: 'Indexing', icon: Database },
-    { id: 'querying', label: 'CLI Query', icon: Terminal },
+    { id: 'querying', label: 'CLI Chat', icon: Terminal },
     { id: 'server', label: 'HTTP Server', icon: Server },
     { id: 'mcp', label: 'MCP Server', icon: Settings },
   ];
@@ -124,7 +128,7 @@ docdexd index --repo /path/to/repo`}
                         title="Terminal"
                         language="bash" 
                         code={`# Run a test query
-docdexd query --repo /path/to/repo --query "otp flow" --limit 5`} 
+docdexd chat --repo /path/to/repo --query "otp flow" --limit 5`} 
                     />
                 </div>
             </div>
@@ -169,7 +173,7 @@ docdexd query --repo /path/to/repo --query "otp flow" --limit 5`}
                     <h4 className="text-white font-medium flex items-center gap-2 mb-2">
                         <Filter className="w-4 h-4 text-brand-400" /> Prefix filters
                     </h4>
-                    <p className="text-sm text-gray-500 mb-4">Skip additional relative prefixes or move the state dir.</p>
+                    <p className="text-sm text-gray-500 mb-4">Skip additional relative prefixes or move the shared state directory.</p>
                     <CodeBlock 
                         title="Terminal"
                         language="bash"
@@ -185,7 +189,7 @@ docdexd query --repo /path/to/repo --query "otp flow" --limit 5`}
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
                 <span className="p-2 bg-brand-400 rounded-lg text-black"><Terminal className="w-5 h-5" /></span>
-                CLI Querying
+                CLI Chat and Search
             </h3>
             <p className="text-gray-400 mb-8 leading-relaxed">
                 Search your indexed documents directly from the terminal. Useful for quick lookups or piping into other tools.
@@ -199,7 +203,7 @@ docdexd query --repo /path/to/repo --query "otp flow" --limit 5`}
                     <CodeBlock 
                         title="Terminal"
                         language="bash"
-                        code={`docdexd query --repo /path/to/repo --query "auth flow" --limit 4`}
+                        code={`docdexd chat --repo /path/to/repo --query "auth flow" --limit 4`}
                     />
                 </div>
 
@@ -235,7 +239,8 @@ docdexd query --repo /path/to/repo --query "otp flow" --limit 5`}
                 HTTP Server
             </h3>
             <p className="text-gray-400 mb-8 leading-relaxed">
-                Expose your index via a lightweight HTTP API. Secure mode is on by default (auth token + loopback allowlist + rate limit). Add <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">--secure-mode=false</code> for local, token-free use.
+                Expose your index via a lightweight HTTP API. Secure mode is on by default (auth token, allowlist, rate limits).
+                TLS is required for non-loopback binds unless you explicitly disable it.
             </p>
 
             <div className="space-y-10">
@@ -246,13 +251,16 @@ docdexd query --repo /path/to/repo --query "otp flow" --limit 5`}
                     <CodeBlock 
                         title="Terminal"
                         language="bash"
-                        code={`# Serve with secure mode defaults
-docdexd serve --repo /path/to/repo \\
-  --host 127.0.0.1 --port 46137 --log info \\
-  --auth-token <token>
+                        code={`# Shared daemon (HTTP + MCP)
+docdexd daemon --repo /path/to/repo \\
+  --host 127.0.0.1 --port 3210 --log warn \\
+  --secure-mode=false
 
-# For local, token-free use
-# docdexd serve --repo /path/to/repo --secure-mode=false`}
+# Serve with TLS + auth for remote access
+docdexd serve --repo /path/to/repo \\
+  --host 0.0.0.0 --port 3210 --auth-token <token> \\
+  --tls-cert /etc/letsencrypt/live/example.com/fullchain.pem \\
+  --tls-key /etc/letsencrypt/live/example.com/privkey.pem`}
                     />
                 </div>
 
@@ -264,7 +272,7 @@ docdexd serve --repo /path/to/repo \\
                     <CodeBlock 
                         title="Terminal"
                         language="bash"
-                        code={`curl "http://127.0.0.1:46137/search?q=auth&snippets=false"`}
+                        code={`curl "http://127.0.0.1:3210/search?q=auth&snippets=false"`}
                     />
                 </div>
             </div>
@@ -277,7 +285,7 @@ docdexd serve --repo /path/to/repo \\
                 MCP Integration
             </h3>
             <p className="text-gray-400 mb-8 leading-relaxed">
-                Docdex implements the Model Context Protocol natively. You can add it to your agents automatically via CLI or manually via config files.
+                Docdex implements the Model Context Protocol natively. Use the shared daemon for HTTP/SSE MCP, or fall back to the stdio server for legacy clients.
             </p>
 
             <div className="space-y-10">
@@ -288,16 +296,19 @@ docdexd serve --repo /path/to/repo \\
                         <PlayCircle className="w-4 h-4" /> Recommended: Auto-Setup
                     </h4>
                     <p className="text-sm text-gray-400 mb-4">
-                        Use the built-in helper or Codex CLI command from the README to wire up MCP clients.
+                        Use the built-in helper to auto-configure agents and keep the shared daemon running.
                     </p>
                     <CodeBlock 
                         title="Terminal"
                         language="bash"
-                        code={`# Auto-detect supported agents (add --all to try every known one)
-docdex mcp-add --repo /path/to/repo --log warn --max-results 8
+                        code={`# Start shared MCP + HTTP daemon
+docdexd daemon --repo /path/to/repo --host 127.0.0.1 --port 3210
 
-# Register with Codex CLI for the current repo
-codex mcp add docdex -- docdexd mcp --repo . --log warn --max-results 8`}
+# Auto-config supported agents (add --all to try every known one)
+docdexd mcp-add --agent codex --repo /path/to/repo --log warn --max-results 8
+
+# Legacy stdio MCP (for clients without HTTP/SSE)
+docdexd mcp --repo /path/to/repo --log warn --max-results 8`}
                     />
                 </div>
 
@@ -307,7 +318,7 @@ codex mcp add docdex -- docdexd mcp --repo . --log warn --max-results 8`}
                         Manual Configuration
                     </h4>
                     <p className="text-sm text-gray-500 mb-4">
-                        If you prefer to edit configuration files manually, add this entry to your <code className="text-xs bg-surface-200 text-gray-300 px-1 py-0.5 rounded">claude_desktop_config.json</code> (or equivalent MCP config).
+                        If you prefer to edit configuration files manually, point your MCP client to the shared SSE endpoint.
                     </p>
                     <CodeBlock 
                         title="claude_desktop_config.json"
@@ -315,16 +326,7 @@ codex mcp add docdex -- docdexd mcp --repo . --log warn --max-results 8`}
                         code={`{
   "mcpServers": {
     "docdex": {
-      "command": "docdexd",
-      "args": [
-        "mcp",
-        "--repo",
-        "/absolute/path/to/repo",
-        "--log",
-        "warn",
-        "--max-results",
-        "8"
-      ]
+      "url": "http://localhost:3210/sse"
     }
   }
 }`}
@@ -368,10 +370,25 @@ codex mcp add docdex -- docdexd mcp --repo . --log warn --max-results 8`}
                 </nav>
 
                 {/* Quick Link Box */}
-                <div className="mt-10 p-5 rounded-2xl bg-surface-50 border border-surface-200/50">
-                    <p className="text-xs text-gray-400 mb-3">Looking for the source code?</p>
-                    <a href="https://github.com/bekirdag/docdex" className="text-sm font-semibold text-white hover:text-brand-400 flex items-center gap-2 transition-colors">
-                        View on GitHub <ChevronRight className="w-3 h-3" />
+                <div className="mt-10 p-5 rounded-2xl bg-surface-50 border border-surface-200/50 space-y-3">
+                    <p className="text-xs text-gray-400">Need the full reference?</p>
+                    <button
+                      onClick={() => onNavigate?.('/documentation')}
+                      className="text-sm font-semibold text-white hover:text-brand-400 flex items-center gap-2 transition-colors"
+                    >
+                      Open documentation <ChevronRight className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => onNavigate?.('/http-api')}
+                      className="text-sm font-semibold text-white hover:text-brand-400 flex items-center gap-2 transition-colors"
+                    >
+                      HTTP API reference <ChevronRight className="w-3 h-3" />
+                    </button>
+                    <a
+                      href="https://github.com/bekirdag/docdex"
+                      className="text-sm font-semibold text-white hover:text-brand-400 flex items-center gap-2 transition-colors"
+                    >
+                      View on GitHub <ChevronRight className="w-3 h-3" />
                     </a>
                 </div>
             </div>

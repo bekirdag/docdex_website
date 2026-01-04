@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Copy, Check, Terminal, Server, Zap } from 'lucide-react';
 
-const Hero: React.FC = () => {
+interface HeroProps {
+  onNavigate?: (path: string) => void;
+}
+
+const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
   const [copied, setCopied] = useState(false);
-  const [version, setVersion] = useState<string>('v0.1.5');
+  const [version, setVersion] = useState<string>('v0.2.2');
   const installCommand = "npm i -g docdex";
   
   const containerRef = useRef<HTMLDivElement>(null);
@@ -294,12 +298,12 @@ const Hero: React.FC = () => {
               </div>
               
               <h1 className="text-5xl sm:text-6xl font-semibold tracking-tighter text-white mb-8 text-balance leading-[0.95]">
-                <span ref={titleRef} className="text-brand-400 inline-block">Docdex</span>: Search smart,<br />
-                <span className="text-gray-500">build faster.</span>
+                <span ref={titleRef} className="text-brand-400 inline-block">Docdex</span>: local code intelligence<br />
+                <span className="text-gray-500">and memory for humans and AI.</span>
               </h1>
               
               <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                Stop wasting tokens. Give your AI agents blazing fast, local full-text search capabilities with zero latency. Built on Tantivy for extreme performance.
+                Open source and free. Docdex builds a private index of your docs and code, adds AST and impact analysis, and powers MCP + HTTP for any agent. Install once and it auto-configures clients, models, and watchers so it just works.
               </p>
               
               <div className="flex justify-center lg:justify-start">
@@ -321,6 +325,23 @@ const Hero: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              <div className="mt-10 flex flex-wrap items-center gap-4 justify-center lg:justify-start">
+                <button
+                  onClick={() => onNavigate?.('/documentation')}
+                  className="px-6 py-3 rounded-full bg-brand-400 text-black font-semibold shadow-[0_0_20px_rgba(234,179,8,0.35)] hover:bg-brand-500 transition-colors"
+                >
+                  Read documentation
+                </button>
+                <a
+                  href="https://github.com/bekirdag/docdex"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 rounded-full border border-surface-200 text-white font-medium hover:bg-surface-100 transition-colors"
+                >
+                  View GitHub
+                </a>
+              </div>
             </div>
           </div>
 
@@ -333,9 +354,9 @@ const Hero: React.FC = () => {
                   <div className="w-12 h-12 rounded-xl bg-brand-500 flex items-center justify-center text-black shadow-[0_0_15px_rgba(234,179,8,0.4)] shrink-0">
                     <Terminal className="w-6 h-6" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white tracking-tight">MCP + HTTP</h3>
+                  <h3 className="text-xl font-semibold text-white tracking-tight">Install and forget</h3>
                 </div>
-                <p className="text-sm text-gray-400 leading-relaxed pl-16 relative z-10">Built-in MCP server and HTTP API share the same index; `/ai-help` ships a JSON playbook for agents.</p>
+                <p className="text-sm text-gray-400 leading-relaxed pl-16 relative z-10">Docdex detects MCP clients, configures them automatically, and keeps a shared daemon running for all repos.</p>
              </div>
              
              {/* Card 2 */}
@@ -345,9 +366,9 @@ const Hero: React.FC = () => {
                   <div className="w-12 h-12 rounded-xl bg-brand-500 flex items-center justify-center text-black shadow-[0_0_15px_rgba(234,179,8,0.4)] shrink-0">
                     <Server className="w-6 h-6" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white tracking-tight">Secure Serve</h3>
+                  <h3 className="text-xl font-semibold text-white tracking-tight">Memory + web search</h3>
                 </div>
-                <p className="text-sm text-gray-400 leading-relaxed pl-16 relative z-10">Default secure mode enforces auth tokens, loopback allowlists, rate limits, and request-size caps.</p>
+                <p className="text-sm text-gray-400 leading-relaxed pl-16 relative z-10">Repo memory and agent memory keep context stable. Optional web search is refined by local LLMs via Ollama.</p>
              </div>
 
              {/* Card 3 */}
@@ -357,9 +378,9 @@ const Hero: React.FC = () => {
                   <div className="w-12 h-12 rounded-xl bg-brand-500 flex items-center justify-center text-black shadow-[0_0_15px_rgba(234,179,8,0.4)] shrink-0">
                     <Zap className="w-6 h-6" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white tracking-tight">Local Index</h3>
+                  <h3 className="text-xl font-semibold text-white tracking-tight">Secure by default</h3>
                 </div>
-                <p className="text-sm text-gray-400 leading-relaxed pl-16 relative z-10">Tantivy-backed index lives in your repo under `.docdex/index`; no external services required.</p>
+                <p className="text-sm text-gray-400 leading-relaxed pl-16 relative z-10">TLS, auth tokens, allowlists, and rate limits protect the daemon while your data stays on-device.</p>
              </div>
           </div>
 

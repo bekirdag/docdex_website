@@ -1,19 +1,51 @@
 import React from 'react';
 import { Github } from 'lucide-react';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  currentPath: string;
+  onNavigate: (path: string) => void;
+}
+
+const Footer: React.FC<FooterProps> = ({ currentPath, onNavigate }) => {
   return (
     <footer className="bg-page py-12 border-t border-surface-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0 text-center md:text-left">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="text-center md:text-left">
             <span className="text-xl font-bold text-white tracking-tight">docdex</span>
-            <p className="text-gray-600 text-sm mt-2">
-              &copy; {new Date().getFullYear()} Bekir Dag. MIT License.
+            <p className="text-gray-600 text-sm mt-2 max-w-sm">
+              Open source, local-first code intelligence and memory for agents. Free to use under the MIT License. © {new Date().getFullYear()} Bekir Dag.
             </p>
           </div>
-          
-          <div className="flex items-center gap-8">
+
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
+            <button
+              onClick={() => onNavigate('/documentation')}
+              className={`hover:text-white transition-colors ${currentPath === '/documentation' ? 'text-white' : ''}`}
+            >
+              Documentation
+            </button>
+            <button
+              onClick={() => onNavigate('/http-api')}
+              className={`hover:text-white transition-colors ${currentPath === '/http-api' ? 'text-white' : ''}`}
+            >
+              HTTP API
+            </button>
+            <button
+              onClick={() => onNavigate('/use-cases')}
+              className={`hover:text-white transition-colors ${currentPath === '/use-cases' ? 'text-white' : ''}`}
+            >
+              Use Cases
+            </button>
+            <button
+              onClick={() => onNavigate('/faq')}
+              className={`hover:text-white transition-colors ${currentPath === '/faq' ? 'text-white' : ''}`}
+            >
+              FAQ
+            </button>
+          </div>
+
+          <div className="flex items-center gap-6">
             <a 
               href="https://github.com/bekirdag/docdex" 
               target="_blank" 

@@ -1,5 +1,5 @@
 {
-  "name": "Docdex - Local RAG & MCP Server",
-  "description": "High-performance local documentation indexer and RAG tool for AI agents. Built on Tantivy.",
+  "name": "Docdex - Open Source Local Code Intelligence",
+  "description": "Local-first doc and code indexer with AST, impact graphs, memory, MCP, and HTTP APIs. Open source and free.",
   "requestFramePermissions": []
 }

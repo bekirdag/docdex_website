@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Terminal, Book, Home } from 'lucide-react';
+import { Menu, X, Terminal } from 'lucide-react';
 
 interface NavbarProps {
-  currentView: 'home' | 'docs';
-  onNavigate: (view: 'home' | 'docs', sectionId?: string) => void;
+  currentPath: string;
+  onNavigate: (path: string, options?: { sectionId?: string }) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
+const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isHome = currentPath === '/';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,23 +19,39 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'Features', href: '#features' },
-    { name: 'Benchmarks', href: '#benchmarks' },
-    { name: 'Use Cases', href: '#use-cases' },
+  const homeLinks = [
+    { name: 'Features', sectionId: 'features' },
+    { name: 'Indexing', sectionId: 'indexing' },
+    { name: 'Benchmarks', sectionId: 'benchmarks' }
   ];
 
-  const handleLinkClick = (e: React.MouseEvent, href: string) => {
+  const pageLinks = [
+    { name: 'Documentation', path: '/documentation' },
+    { name: 'HTTP API', path: '/http-api' },
+    { name: 'Use Cases', path: '/use-cases', sectionId: 'use-cases' },
+    { name: 'FAQ', path: '/faq' }
+  ];
+
+  const handleSectionClick = (e: React.MouseEvent, sectionId: string) => {
     e.preventDefault();
-    const sectionId = href.replace('#', '');
-    onNavigate('home', sectionId);
+    onNavigate('/', { sectionId });
+    setIsMobileMenuOpen(false);
+  };
+
+  const handlePageClick = (e: React.MouseEvent, path: string, sectionId?: string) => {
+    e.preventDefault();
+    if (isHome && sectionId) {
+      onNavigate('/', { sectionId });
+    } else {
+      onNavigate(path);
+    }
     setIsMobileMenuOpen(false);
   };
 
   return (
     <nav 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${
-        isScrolled || currentView === 'docs'
+        isScrolled || !isHome
           ? 'bg-page/80 backdrop-blur-xl border-surface-200/60 py-3' 
           : 'bg-transparent border-transparent py-6'
       }`}
@@ -43,7 +60,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
         <div className="flex justify-between items-center">
           <div 
             className="flex items-center gap-2 cursor-pointer group" 
-            onClick={() => onNavigate('home')}
+            onClick={() => onNavigate('/')}
           >
             <div className="w-8 h-8 bg-brand-400 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(250,204,21,0.3)] group-hover:shadow-[0_0_25px_rgba(250,204,21,0.5)] transition-all">
               <Terminal className="text-black w-5 h-5" />
@@ -53,24 +70,29 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
-            {currentView === 'home' && navLinks.map((link) => (
+            {homeLinks.map((link) => (
               <a 
                 key={link.name} 
-                href={link.href}
-                onClick={(e) => handleLinkClick(e, link.href)}
-                className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                href={`/#${link.sectionId}`}
+                onClick={(e) => handleSectionClick(e, link.sectionId)}
+                className={`text-sm font-medium transition-colors ${isHome ? 'text-gray-400 hover:text-white' : 'hidden'}`}
               >
                 {link.name}
               </a>
             ))}
-            
-            <button
-              onClick={() => onNavigate(currentView === 'docs' ? 'home' : 'docs')}
-              className={`flex items-center gap-2 text-sm font-medium transition-colors ${currentView === 'docs' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
-            >
-              {currentView === 'docs' ? <Home className="w-4 h-4" /> : <Book className="w-4 h-4" />}
-              {currentView === 'docs' ? 'Back to Home' : 'Documentation'}
-            </button>
+
+            {pageLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.path}
+                onClick={(e) => handlePageClick(e, link.path, link.sectionId)}
+                className={`text-sm font-medium transition-colors ${
+                  currentPath === link.path ? 'text-white' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {link.name}
+              </a>
+            ))}
 
             <a 
               href="https://github.com/bekirdag/docdex" 
@@ -99,27 +121,31 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
         <div className="md:hidden bg-surface-50 border-b border-surface-200 absolute w-full left-0 top-full">
           <div className="px-4 pt-4 pb-6 space-y-2">
             <button
-              onClick={() => { onNavigate('home'); setIsMobileMenuOpen(false); }}
+              onClick={() => { onNavigate('/'); setIsMobileMenuOpen(false); }}
               className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-surface-200"
             >
               Home
             </button>
-            {navLinks.map((link) => (
+            {homeLinks.map((link) => (
               <a
                 key={link.name}
-                href={link.href}
+                href={`/#${link.sectionId}`}
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-surface-200"
-                onClick={(e) => handleLinkClick(e, link.href)}
+                onClick={(e) => handleSectionClick(e, link.sectionId)}
               >
                 {link.name}
               </a>
             ))}
-             <button
-              onClick={() => { onNavigate('docs'); setIsMobileMenuOpen(false); }}
-              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-brand-400 hover:text-brand-300 hover:bg-surface-200"
-            >
-              Documentation
-            </button>
+            {pageLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.path}
+                onClick={(e) => handlePageClick(e, link.path, link.sectionId)}
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-surface-200"
+              >
+                {link.name}
+              </a>
+            ))}
             <a 
               href="https://github.com/bekirdag/docdex" 
               className="block mt-4 text-center px-4 py-3 font-semibold bg-brand-400 text-black rounded-lg"

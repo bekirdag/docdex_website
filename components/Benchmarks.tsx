@@ -94,7 +94,7 @@ const Benchmarks: React.FC = () => {
                     type="category" 
                     stroke="#525252" 
                     width={140} 
-                    tick={{fill: '#a3a3a3', fontSize: 13, fontFamily: 'Inter', fontWeight: 500}} 
+                    tick={{fill: '#a3a3a3', fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: 500}} 
                     axisLine={false} 
                     tickLine={false} 
                   />
