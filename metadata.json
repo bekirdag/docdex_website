@@ -1,5 +1,5 @@
 {
   "name": "Docdex - Open Source Local Code Intelligence",
-  "description": "Local-first doc and code indexer with AST, impact graphs, memory, MCP, and HTTP APIs. Open source and free.",
+  "description": "Docdex is an open source, local-first indexer for docs and code with AST, impact graphs, memory, MCP, and HTTP APIs. Install once to give agents fast, secure context.",
   "requestFramePermissions": []
 }

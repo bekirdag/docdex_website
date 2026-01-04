@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import Seo from './Seo';
 import Hero from './Hero';
 import Features from './Features';
 import IndexExplainer from './IndexExplainer';
 import CodeDemo from './CodeDemo';
-import Benchmarks from './Benchmarks';
 import AgentCommands from './AgentCommands';
 import Impact from './Impact';
 import UseCases from './UseCases';
@@ -14,7 +13,33 @@ interface HomePageProps {
   onNavigate: (path: string, options?: { sectionId?: string }) => void;
 }
 
+const Benchmarks = React.lazy(() => import('./Benchmarks'));
+
 const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
+  const [renderBenchmarks, setRenderBenchmarks] = useState(false);
+  const benchmarksRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (renderBenchmarks) return;
+    const node = benchmarksRef.current;
+    if (!node) return;
+    if (!('IntersectionObserver' in window)) {
+      setRenderBenchmarks(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setRenderBenchmarks(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px 0px' }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [renderBenchmarks]);
+
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -58,7 +83,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     <div className="animate-in fade-in duration-500">
       <Seo
         title="Open Source Local Code Intelligence and Memory"
-        description="Docdex indexes docs and code locally with AST, impact graphs, memory, MCP, and HTTP APIs. Open source, secure, and install-and-forget."
+        description="Docdex is an open source, local-first indexer for docs and code with AST, impact graphs, memory, MCP, and HTTP APIs. Install once to give agents fast, secure context."
         path="/"
         jsonLd={jsonLd}
       />
@@ -66,7 +91,27 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       <Features />
       <IndexExplainer />
       <CodeDemo />
-      <Benchmarks />
+      <div ref={benchmarksRef}>
+        {renderBenchmarks ? (
+          <Suspense
+            fallback={
+              <section id="benchmarks" className="py-32 bg-page">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="h-64 rounded-3xl border border-surface-200/50 bg-surface-50/30 animate-pulse" />
+                </div>
+              </section>
+            }
+          >
+            <Benchmarks />
+          </Suspense>
+        ) : (
+          <section id="benchmarks" className="py-32 bg-page">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="h-64 rounded-3xl border border-surface-200/50 bg-surface-50/30" />
+            </div>
+          </section>
+        )}
+      </div>
       <AgentCommands />
       <Impact />
       <UseCases onNavigate={(path) => onNavigate(path)} />

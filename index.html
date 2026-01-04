@@ -6,99 +6,71 @@
     <title>Docdex - Open Source Local Code Intelligence and Memory</title>
     <meta
       name="description"
-      content="Docdex is an open source, local-first indexer for docs and code. It powers AST, impact graphs, memory, MCP, and HTTP APIs with secure TLS and auth."
+      content="Docdex is an open source, local-first indexer for docs and code with AST, impact graphs, memory, MCP, and HTTP APIs. Install once to give agents fast, secure context."
     />
     <meta name="robots" content="index,follow" />
     <meta name="application-name" content="Docdex" />
     <meta name="author" content="Bekir Dag" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
     <link rel="manifest" href="/favicon/site.webmanifest">
     <link rel="shortcut icon" href="/favicon/favicon.ico">
     <meta name="theme-color" content="#030303" />
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NJ7XZGC1C1"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-NJ7XZGC1C1');
+    <script type="application/ld+json" id="docdex-jsonld">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "name": "Docdex",
+            "url": "https://docdex.org",
+            "description": "Open source, local-first indexer for docs and code with AST, impact graphs, memory, MCP, and HTTP APIs.",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://docdex.org/documentation?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "name": "Docdex",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "macOS, Linux, Windows",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "url": "https://docdex.org",
+            "downloadUrl": "https://www.npmjs.com/package/docdex",
+            "license": "https://github.com/bekirdag/docdex/blob/main/LICENSE",
+            "description": "Local-first documentation and code indexer with AST, impact graph, memory, MCP, and secure HTTP APIs.",
+            "publisher": {
+              "@type": "Person",
+              "name": "Bekir Dag"
+            },
+            "sameAs": [
+              "https://github.com/bekirdag/docdex",
+              "https://www.npmjs.com/package/docdex"
+            ]
+          }
+        ]
+      }
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Space Grotesk', 'sans-serif'],
-              mono: ['JetBrains Mono', 'monospace'],
-            },
-            colors: {
-              brand: {
-                // Gold/Yellow primary
-                300: '#fde047', 
-                400: '#facc15',
-                500: '#eab308',
-                600: '#ca8a04',
-              },
-              // Deep dark background
-              page: '#030303',
-              // Surface colors
-              surface: {
-                50: '#0A0A0A',
-                100: '#121212',
-                200: '#1E1E1E',
-                300: '#2D2D2D',
-                400: '#404040',
-              }
-            },
-            backgroundImage: {
-              'glow-gradient': 'radial-gradient(circle at 50% 0%, rgba(250, 204, 21, 0.08) 0%, rgba(0, 0, 0, 0) 60%)',
-              'shiny-gold': 'linear-gradient(180deg, #FDE047 0%, #EAB308 100%)',
-              'shiny-dark': 'linear-gradient(180deg, #262626 0%, #171717 100%)',
-            }
-          }
-        }
-      }
-    </script>
-    <style>
-      body {
-        background-color: #030303;
-        color: #e5e5e5;
-        font-feature-settings: "cv11", "ss01";
-        -webkit-font-smoothing: antialiased;
-      }
-      /* Custom scrollbar */
-      ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #030303; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #262626; 
-        border-radius: 3px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #404040; 
-      }
-      .text-balance {
-        text-wrap: balance;
-      }
-      .bg-grid-pattern {
-        background-size: 60px 60px;
-        background-image: 
-          linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-      }
-    </style>
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    </noscript>
   <script type="importmap">
 {
   "imports": {
@@ -110,9 +82,17 @@
   }
 }
 </script>
-</head>
+  </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main>
+        <header>
+          <h1>Docdex: open source local code intelligence and memory.</h1>
+          <h2>AST, impact graphs, memory, MCP, and secure HTTP APIs for agents.</h2>
+          <p>Install once, index locally, and serve fast context for humans and AI.</p>
+        </header>
+      </main>
+    </div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>

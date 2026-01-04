@@ -279,7 +279,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
   return (
     <div ref={containerRef} className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-grid-pattern selection:bg-brand-400/30">
-      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
+      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" aria-hidden="true" />
       {/* Lights */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[600px] bg-brand-400/5 blur-[120px] rounded-full pointer-events-none z-0"></div>
       <div className="absolute top-20 left-0 w-[500px] h-[500px] bg-brand-200/5 blur-[100px] rounded-full pointer-events-none z-0"></div>

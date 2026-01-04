@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './components/HomePage';
-import DocsPage from './components/DocsPage';
-import HttpApiPage from './components/HttpApiPage';
-import FaqPage from './components/FaqPage';
-import UseCasesPage from './components/UseCasesPage';
-import NotFoundPage from './components/NotFoundPage';
+
+const DocsPage = React.lazy(() => import('./components/DocsPage'));
+const HttpApiPage = React.lazy(() => import('./components/HttpApiPage'));
+const FaqPage = React.lazy(() => import('./components/FaqPage'));
+const UseCasesPage = React.lazy(() => import('./components/UseCasesPage'));
+const NotFoundPage = React.lazy(() => import('./components/NotFoundPage'));
 
 type RouteKey = 'home' | 'documentation' | 'http-api' | 'faq' | 'use-cases' | 'not-found';
 
@@ -24,9 +25,54 @@ const normalizePath = (path: string) => (path.length > 1 ? path.replace(/\/+$/, 
 
 const resolveRoute = (path: string): RouteKey => routeMap[normalizePath(path)] || 'not-found';
 
+const ANALYTICS_ID = 'G-NJ7XZGC1C1';
+
+const loadAnalytics = () => {
+  const win = window as Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
+  if (win.gtag) return;
+  win.dataLayer = win.dataLayer || [];
+  const gtag = (...args: unknown[]) => {
+    win.dataLayer?.push(args);
+  };
+  win.gtag = gtag;
+  gtag('js', new Date());
+  gtag('config', ANALYTICS_ID);
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${ANALYTICS_ID}`;
+  document.head.appendChild(script);
+};
+
 function App() {
   const [currentRoute, setCurrentRoute] = useState<RouteKey>(() => resolveRoute(window.location.pathname));
   const [currentPath, setCurrentPath] = useState<string>(() => normalizePath(window.location.pathname));
+
+  useEffect(() => {
+    let loaded = false;
+    let timeoutId: number | undefined;
+
+    const trigger = () => {
+      if (loaded) return;
+      loaded = true;
+      loadAnalytics();
+      cleanup();
+    };
+
+    const cleanup = () => {
+      if (timeoutId) window.clearTimeout(timeoutId);
+      window.removeEventListener('scroll', trigger);
+      window.removeEventListener('mousemove', trigger);
+      window.removeEventListener('touchstart', trigger);
+    };
+
+    window.addEventListener('scroll', trigger, { passive: true });
+    window.addEventListener('mousemove', trigger);
+    window.addEventListener('touchstart', trigger, { passive: true });
+    timeoutId = window.setTimeout(trigger, 3500);
+
+    return cleanup;
+  }, []);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -73,37 +119,61 @@ function App() {
     window.scrollTo(0, 0);
   };
 
+  const PageTransition = ({ children }: { children: React.ReactNode }) => (
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">{children}</div>
+  );
+
+  const renderRoute = () => {
+    if (currentRoute === 'home') return <HomePage onNavigate={handleNavigate} />;
+    if (currentRoute === 'documentation') {
+      return (
+        <PageTransition>
+          <DocsPage />
+        </PageTransition>
+      );
+    }
+    if (currentRoute === 'http-api') {
+      return (
+        <PageTransition>
+          <HttpApiPage />
+        </PageTransition>
+      );
+    }
+    if (currentRoute === 'faq') {
+      return (
+        <PageTransition>
+          <FaqPage />
+        </PageTransition>
+      );
+    }
+    if (currentRoute === 'use-cases') {
+      return (
+        <PageTransition>
+          <UseCasesPage />
+        </PageTransition>
+      );
+    }
+    return (
+      <PageTransition>
+        <NotFoundPage onNavigate={handleNavigate} />
+      </PageTransition>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-page text-white selection:bg-brand-400/30 selection:text-brand-400 font-sans">
       <Navbar currentPath={currentPath} onNavigate={handleNavigate} />
       
       <main>
-        {currentRoute === 'home' && <HomePage onNavigate={handleNavigate} />}
-        {currentRoute === 'documentation' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <DocsPage />
-          </div>
-        )}
-        {currentRoute === 'http-api' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <HttpApiPage />
-          </div>
-        )}
-        {currentRoute === 'faq' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <FaqPage />
-          </div>
-        )}
-        {currentRoute === 'use-cases' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <UseCasesPage />
-          </div>
-        )}
-        {currentRoute === 'not-found' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <NotFoundPage onNavigate={handleNavigate} />
-          </div>
-        )}
+        <Suspense
+          fallback={
+            <div className="min-h-[60vh] flex items-center justify-center text-gray-400 text-sm">
+              Loading Docdex...
+            </div>
+          }
+        >
+          {renderRoute()}
+        </Suspense>
       </main>
       
       <Footer currentPath={currentPath} onNavigate={handleNavigate} />
